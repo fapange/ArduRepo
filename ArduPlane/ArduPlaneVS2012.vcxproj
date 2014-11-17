@@ -1,0 +1,245 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="AVR|Win32">
+      <Configuration>AVR</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectName>ArduPlane</ProjectName>
+    <ProjectGuid>{D5BD7347-7810-4405-9F3B-56FBBF0E92BA}</ProjectGuid>
+    <RootNamespace>Sketch1</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='AVR|Win32'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>NotSet</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <GCC_C_AVRAfterTargets>PreBuildEvent</GCC_C_AVRAfterTargets>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <GCC_C_AVRAfterTargets>PreBuildEvent</GCC_C_AVRAfterTargets>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <GCC_C_AVRAfterTargets>PreBuildEvent</GCC_C_AVRAfterTargets>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="_vsaddin\AVR_build.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='AVR|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">_vsAddIn\_build\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">_vsAddIn\_build\</IntDir>
+    <ExtensionsToDeleteOnClean Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">*.obj%3b*.ilk%3b*.tlb%3b*.tli%3b*.tlh%3b*.tmp%3b*.rsp%3b*.pgc%3b*.pgd%3b$(TargetPath)</ExtensionsToDeleteOnClean>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Configuration)\</IntDir>
+    <CustomBuildAfterTargets Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">_GCC_C_AVR</CustomBuildAfterTargets>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='AVR|Win32'">.\_vsAddIn\_build\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='AVR|Win32'">.\_vsAddIn\_build\</IntDir>
+    <ExtensionsToDeleteOnClean Condition="'$(Configuration)|$(Platform)'=='AVR|Win32'" />
+    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='AVR|Win32'">C:\arduino\hardware\arduino\cores\arduino;C:\arduino\hardware\tools\avr\avr\include;C:\arduino\hardware\tools\avr\avr\include\avr;C:\arduino\hardware\tools\avr\avr;C:\arduino\hardware\tools\avr\lib\gcc\avr\4.3.2\include;C:\arduino\libraries\SPI;G:\ArduRepo\libraries\FastSerial;G:\ArduRepo\libraries\AP_Common;G:\ArduRepo\libraries\Arduino_Mega_ISR_Registry;G:\ArduRepo\libraries\APM_RC;G:\ArduRepo\libraries\AP_GPS;G:\ArduRepo\libraries\I2C;G:\ArduRepo\libraries\DataFlash;G:\ArduRepo\libraries\AP_ADC;G:\ArduRepo\libraries\AP_AnalogSource;G:\ArduRepo\libraries\AP_PeriodicProcess;G:\ArduRepo\libraries\AP_Baro;G:\ArduRepo\libraries\AP_Compass;G:\ArduRepo\libraries\AP_Math;G:\ArduRepo\libraries\AP_InertialSensor;G:\ArduRepo\libraries\AP_IMU;G:\ArduRepo\libraries\AP_DCM;G:\ArduRepo\libraries\PID;G:\ArduRepo\libraries\RC_Channel;G:\ArduRepo\libraries\AP_RangeFinder;G:\ArduRepo\libraries\ModeFilter;G:\ArduRepo\libraries\AP_Relay;G:\ArduRepo\libraries\AP_Mount;G:\ArduRepo\libraries\GCS_MAVLink;G:\ArduRepo\libraries\memcheck</IncludePath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <PreBuildEvent>
+      <Message>Deleting final build for files for sketch %27$(ProjectName)%27</Message>
+      <Command>ECHO OFF
+
+del "$(OutDir)$(ProjectName).cpp.o"
+
+del "$(OutDir)core.a"
+
+del "$(OutDir)*.lst"
+
+del "$(OutDir)*.rom"
+
+del "$(OutDir)*.elf"
+
+exit 0
+
+</Command>
+    </PreBuildEvent>
+    <PostBuildEvent>
+      <Message>Creating sketch %27$(ProjectName).hex%27</Message>
+      <Command>echo Linking
+set GCC=c:\arduino\arduinoIDE\hardware\tools\avr\bin
+
+echo Linking. Creating elf for $(ProjectName)
+%GCC%\avr-gcc  -Os -W1,--gc-sections -o $(OutDir)$(ProjectName).elf $(OutDir)$(ProjectName).cpp.o $(OutDir)core.a  -L$(OutDir) -lm
+if errorlevel 1 goto fail1
+
+
+avr-objcopy -O srec -R .eeprom $(OutDir)$(ProjectName).elf $(OutDir)$(ProjectName).rom
+if errorlevel 1 goto fail2
+
+avr-objcopy -O ihex -R .flash $(OutDir)$(ProjectName).elf $(OutDir)$(ProjectName).hex
+if errorlevel 1 goto fail3
+
+echo Created sketch
+
+goto :eof
+
+
+:fail1
+echo Failed to create .elf
+goto :eof
+
+:fail2
+echo Failed to create .rom
+goto :eof
+
+:fail3
+echo Failed to create .hex
+goto :eof
+
+</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='AVR|Win32'">
+    <PreBuildEvent>
+      <Message>Check delete previous build files for sketch %27$(ProjectName)%27</Message>
+      <Command>call .\_vsaddin\build_all_begin.bat "$(OutDir)" "$(ProjectName)"
+"$(IntDir)"
+</Command>
+    </PreBuildEvent>
+    <GCC_C_AVR>
+      <AdditionalOptions>
+      </AdditionalOptions>
+    </GCC_C_AVR>
+    <GCC_CPP_AVR>
+      <AdditionalOptions>
+      </AdditionalOptions>
+    </GCC_CPP_AVR>
+    <PostBuildEvent>
+      <Message>Creating sketch %27$(ProjectName).hex%27</Message>
+      <Command>call .\_vsAddIn\link_all.bat $(OutDir) $(ProjectName)  "$(IntDir)"</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="APM_Config.h" />
+    <ClInclude Include="APM_Config_mavlink_hil.h" />
+    <ClInclude Include="config.h" />
+    <ClInclude Include="defines.h" />
+    <ClInclude Include="PAWNEE.h" />
+    <ClInclude Include="EDGE_540T_R1.h" />
+    <ClInclude Include="EDGE_540T_R2.h" />
+    <ClInclude Include="EDGE_540T_R3.h" />
+    <ClInclude Include="EDGE_540T_R88.h" />
+    <ClInclude Include="GCS.h" />
+    <ClInclude Include="mydefines.h" />
+    <ClInclude Include="Parameters.h" />
+    <ClInclude Include="Visual Micro\.ArduPlane.vsarduino.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ArduPlane.pde">
+      <FileType>CppCode</FileType>
+    </None>
+    <None Include="Attitude.pde">
+      <FileType>CppCode</FileType>
+    </None>
+    <None Include="climb_rate.pde">
+      <FileType>CppCode</FileType>
+    </None>
+    <None Include="commands.pde">
+      <FileType>CppCode</FileType>
+    </None>
+    <None Include="commands_logic.pde">
+      <FileType>CppCode</FileType>
+    </None>
+    <None Include="commands_process.pde">
+      <FileType>CppCode</FileType>
+    </None>
+    <None Include="control_modes.pde">
+      <FileType>CppCode</FileType>
+    </None>
+    <None Include="events.pde">
+      <FileType>CppCode</FileType>
+    </None>
+    <None Include="failsafe.pde">
+      <FileType>CppCode</FileType>
+    </None>
+    <None Include="GCS_Mavlink.pde">
+      <FileType>CppCode</FileType>
+    </None>
+    <None Include="geofence.pde">
+      <FileType>CppCode</FileType>
+    </None>
+    <None Include="Log.pde">
+      <FileType>CppCode</FileType>
+    </None>
+    <None Include="navigation.pde">
+      <FileType>CppCode</FileType>
+    </None>
+    <None Include="planner.pde">
+      <FileType>CppCode</FileType>
+    </None>
+    <None Include="radio.pde">
+      <FileType>CppCode</FileType>
+    </None>
+    <None Include="sensors.pde">
+      <FileType>CppCode</FileType>
+    </None>
+    <None Include="setup.pde">
+      <FileType>CppCode</FileType>
+    </None>
+    <None Include="system.pde">
+      <FileType>CppCode</FileType>
+    </None>
+    <None Include="test.pde">
+      <FileType>CppCode</FileType>
+    </None>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="_vsaddin\AVR_build.targets" />
+  </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties arduino.board.core.full_path="F:\ArduPlane\arduino-0022-relaxpatch\hardware\arduino\cores\arduino" arduino.project="1" arduino.board.name="mega" arduino.board.desc="Arduino Mega (ATmega1280)" arduino.board.property_bag="name=Arduino Mega (ATmega1280)&#xD;&#xA;upload.protocol=stk500&#xD;&#xA;upload.maximum_size=126976&#xD;&#xA;upload.speed=57600&#xD;&#xA;bootloader.low_fuses=0xFF&#xD;&#xA;bootloader.high_fuses=0xDA&#xD;&#xA;bootloader.extended_fuses=0xF5&#xD;&#xA;bootloader.path=atmega&#xD;&#xA;bootloader.file=ATmegaBOOT_168_atmega1280.hex&#xD;&#xA;bootloader.unlock_bits=0x3F&#xD;&#xA;bootloader.lock_bits=0x0F&#xD;&#xA;build.mcu=atmega1280&#xD;&#xA;build.f_cpu=16000000L&#xD;&#xA;build.core=arduino&#xD;&#xA;runtime.ide.path=C:\arduino&#xD;&#xA;build.system.path=C:\arduino\hardware\arduino\system&#xD;&#xA;software=ARDUINO&#xD;&#xA;runtime.ide.version=101&#xD;&#xA;vm.core.include=wprogram.h&#xD;&#xA;vm.boardsource.path=C:\arduino\hardware\arduino&#xD;&#xA;vm.boardsource.name=boards.txt&#xD;&#xA;vm.platformname.name=&#xD;&#xA;" arduino.build.mcu="atmega1280" arduino.build.f_cpu="16000000L" arduino.build.core="arduino" arduino.upload.protocol="stk500" arduino.upload.speed="57600" arduino.upload.maximum_size="126976" arduino.compiler.include.paths=" -IF:\ArduPlane\arduino-0022-relaxpatch\libraries\SPI " arduino.upload.port="COM25" />
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>

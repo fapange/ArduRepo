@@ -1,0 +1,35 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup
+    Condition="'$(GCC_C_AVRBeforeTargets)' == '' and '$(GCC_C_AVRAfterTargets)' == '' and '$(ConfigurationType)' != 'Makefile'">
+    <GCC_C_AVRBeforeTargets>Midl</GCC_C_AVRBeforeTargets>
+    <GCC_C_AVRAfterTargets>CustomBuild</GCC_C_AVRAfterTargets>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GCC_C_AVRDependsOn
+      Condition="'$(ConfigurationType)' != 'Makefile'">_SelectedFiles;$(GCC_C_AVRDependsOn)</GCC_C_AVRDependsOn>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <GCC_C_AVR>
+      <CommandLineTemplate>call .\_vsaddin\build_c_item.bat $(IntDir) %(Filename)%(Extension) %(Filename) %(FullPath) %(RootDir)%(Directory) $(ProjectName) $(ProjectDir)</CommandLineTemplate>
+      <Outputs>$(IntDir)%(Filename)%(Extension).o</Outputs>
+      <ExecutionDescription>%(Filename)%(Extension)</ExecutionDescription>
+    </GCC_C_AVR>
+  </ItemDefinitionGroup>
+  <PropertyGroup
+    Condition="'$(GCC_CPP_AVRBeforeTargets)' == '' and '$(GCC_CPP_AVRAfterTargets)' == '' and '$(ConfigurationType)' != 'Makefile'">
+    <GCC_CPP_AVRBeforeTargets>Midl</GCC_CPP_AVRBeforeTargets>
+    <GCC_CPP_AVRAfterTargets>CustomBuild</GCC_CPP_AVRAfterTargets>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GCC_CPP_AVRDependsOn
+      Condition="'$(ConfigurationType)' != 'Makefile'">_SelectedFiles;$(GCC_CPP_AVRDependsOn)</GCC_CPP_AVRDependsOn>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <GCC_CPP_AVR>
+      <CommandLineTemplate>call .\_vsaddin\build_cpp_item.bat $(IntDir) %(Filename)%(Extension) %(Filename) %(FullPath) %(RootDir)%(Directory) $(ProjectName) $(ProjectDir)</CommandLineTemplate>
+      <Outputs>%(Filename)%(Extension).o</Outputs>
+      <ExecutionDescription>%(Filename)%(Extension)</ExecutionDescription>
+    </GCC_CPP_AVR>
+  </ItemDefinitionGroup>
+</Project>

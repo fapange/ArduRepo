@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="APM_Config.h" />
+    <ClInclude Include="APM_Config_mavlink_hil.h" />
+    <ClInclude Include="config.h" />
+    <ClInclude Include="defines.h" />
+    <ClInclude Include="EDGE_540T_R2.h" />
+    <ClInclude Include="EDGE_540T_R3.h" />
+    <ClInclude Include="GCS.h" />
+    <ClInclude Include="mydefines.h" />
+    <ClInclude Include="Parameters.h" />
+    <ClInclude Include="EDGE_540T_R1.h" />
+    <ClInclude Include="EDGE_540T_R88.h" />
+    <ClInclude Include="Visual Micro\.ArduPlane.vsarduino.h" />
+    <ClInclude Include="PAWNEE.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ArduPlane.pde" />
+    <None Include="Attitude.pde" />
+    <None Include="climb_rate.pde" />
+    <None Include="commands.pde" />
+    <None Include="commands_logic.pde" />
+    <None Include="commands_process.pde" />
+    <None Include="control_modes.pde" />
+    <None Include="events.pde" />
+    <None Include="failsafe.pde" />
+    <None Include="GCS_Mavlink.pde" />
+    <None Include="geofence.pde" />
+    <None Include="Log.pde" />
+    <None Include="navigation.pde" />
+    <None Include="planner.pde" />
+    <None Include="radio.pde" />
+    <None Include="sensors.pde" />
+    <None Include="setup.pde" />
+    <None Include="system.pde" />
+    <None Include="test.pde" />
+  </ItemGroup>
+</Project>

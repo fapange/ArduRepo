@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="APM_Config.h" />
+    <ClInclude Include="config.h" />
+    <ClInclude Include="defines.h" />
+    <ClInclude Include="GCS.h" />
+    <ClInclude Include="mydefines.h" />
+    <ClInclude Include="Parameters.h" />
+    <ClInclude Include="Visual Micro\.ArduPlane.vsarduino.h" />
+    <ClInclude Include="Hil_Plane.h" />
+    <ClInclude Include="N381NA.h" />
+    <ClInclude Include="N382NA.h" />
+    <ClInclude Include="N383NA.h" />
+    <ClInclude Include="N384NA.h" />
+    <ClInclude Include="N385NA.h" />
+    <ClInclude Include="N801RE.h" />
+    <ClInclude Include="N802RE.h" />
+    <ClInclude Include="N803RE.h" />
+    <ClInclude Include="N386NA.h" />
+    <ClInclude Include="N387NA.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ArduPlane.pde" />
+    <None Include="Attitude.pde" />
+    <None Include="climb_rate.pde" />
+    <None Include="commands.pde" />
+    <None Include="commands_logic.pde" />
+    <None Include="commands_process.pde" />
+    <None Include="control_modes.pde" />
+    <None Include="events.pde" />
+    <None Include="failsafe.pde" />
+    <None Include="GCS_Mavlink.pde" />
+    <None Include="geofence.pde" />
+    <None Include="Log.pde" />
+    <None Include="navigation.pde" />
+    <None Include="planner.pde" />
+    <None Include="radio.pde" />
+    <None Include="sensors.pde" />
+    <None Include="setup.pde" />
+    <None Include="system.pde" />
+    <None Include="test.pde" />
+  </ItemGroup>
+</Project>

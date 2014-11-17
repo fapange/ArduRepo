@@ -1,0 +1,155 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <PropertyPageSchema
+      Include="$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml" />
+    <AvailableItemName
+      Include="GCC_C_AVR">
+      <Targets>_GCC_C_AVR</Targets>
+    </AvailableItemName>
+    <AvailableItemName
+      Include="GCC_CPP_AVR">
+      <Targets>_GCC_CPP_AVR</Targets>
+    </AvailableItemName>
+  </ItemGroup>
+  <UsingTask
+    TaskName="GCC_C_AVR"
+    TaskFactory="XamlTaskFactory"
+    AssemblyName="Microsoft.Build.Tasks.v4.0">
+    <Task>$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml</Task>
+  </UsingTask>
+  <UsingTask
+    TaskName="GCC_CPP_AVR"
+    TaskFactory="XamlTaskFactory"
+    AssemblyName="Microsoft.Build.Tasks.v4.0">
+    <Task>$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml</Task>
+  </UsingTask>
+  <Target
+    Name="_GCC_C_AVR"
+    BeforeTargets="$(GCC_C_AVRBeforeTargets)"
+    AfterTargets="$(GCC_C_AVRAfterTargets)"
+    Condition="'@(GCC_C_AVR)' != ''"
+    DependsOnTargets="$(GCC_C_AVRDependsOn);ComputeGCC_C_AVROutput"
+    Outputs="%(GCC_C_AVR.Outputs)"
+    Inputs="%(GCC_C_AVR.Identity);%(GCC_C_AVR.AdditionalDependencies);$(MSBuildProjectFile)">
+    <ItemGroup
+      Condition="'@(SelectedFiles)' != ''">
+      <GCC_C_AVR
+        Remove="@(GCC_C_AVR)"
+        Condition="'%(Identity)' != '@(SelectedFiles)'" />
+    </ItemGroup>
+    <ItemGroup>
+      <GCC_C_AVR_tlog
+        Include="%(GCC_C_AVR.Outputs)"
+        Condition="'%(GCC_C_AVR.Outputs)' != '' and '%(GCC_C_AVR.ExcludedFromBuild)' != 'true'">
+        <Source>@(GCC_C_AVR, '|')</Source>
+      </GCC_C_AVR_tlog>
+    </ItemGroup>
+    <Message
+      Importance="High"
+      Text="%(GCC_C_AVR.ExecutionDescription)" />
+    <WriteLinesToFile
+      Condition="'@(GCC_C_AVR_tlog)' != '' and '%(GCC_C_AVR_tlog.ExcludedFromBuild)' != 'true'"
+      File="$(IntDir)$(ProjectName).write.1.tlog"
+      Lines="^%(GCC_C_AVR_tlog.Source);@(GCC_C_AVR_tlog-&gt;'%(Fullpath)')" />
+    <GCC_C_AVR
+      Condition="'@(GCC_C_AVR)' != '' and '%(GCC_C_AVR.ExcludedFromBuild)' != 'true'"
+      CommandLineTemplate="%(GCC_C_AVR.CommandLineTemplate)"
+      AdditionalOptions="%(GCC_C_AVR.AdditionalOptions)"
+      Inputs="%(GCC_C_AVR.Identity)" />
+  </Target>
+  <PropertyGroup>
+    <ComputeLinkInputsTargets>
+            $(ComputeLinkInputsTargets);
+            ComputeGCC_C_AVROutput;
+          </ComputeLinkInputsTargets>
+    <ComputeLibInputsTargets>
+            $(ComputeLibInputsTargets);
+            ComputeGCC_C_AVROutput;
+          </ComputeLibInputsTargets>
+  </PropertyGroup>
+  <Target
+    Name="ComputeGCC_C_AVROutput"
+    Condition="'@(GCC_C_AVR)' != ''">
+    <ItemGroup>
+      <GCC_C_AVRDirsToMake
+        Condition="'@(GCC_C_AVR)' != '' and '%(GCC_C_AVR.ExcludedFromBuild)' != 'true'"
+        Include="%(GCC_C_AVR.Outputs)" />
+      <Link
+        Include="%(GCC_C_AVRDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+      <Lib
+        Include="%(GCC_C_AVRDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+      <ImpLib
+        Include="%(GCC_C_AVRDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+    </ItemGroup>
+    <MakeDir
+      Directories="@(GCC_C_AVRDirsToMake-&gt;'%(RootDir)%(Directory)')" />
+  </Target>
+  <Target
+    Name="_GCC_CPP_AVR"
+    BeforeTargets="$(GCC_CPP_AVRBeforeTargets)"
+    AfterTargets="$(GCC_CPP_AVRAfterTargets)"
+    Condition="'@(GCC_CPP_AVR)' != ''"
+    DependsOnTargets="$(GCC_CPP_AVRDependsOn);ComputeGCC_CPP_AVROutput"
+    Outputs="%(GCC_CPP_AVR.Outputs)"
+    Inputs="%(GCC_CPP_AVR.Identity);%(GCC_CPP_AVR.AdditionalDependencies);$(MSBuildProjectFile)">
+    <ItemGroup
+      Condition="'@(SelectedFiles)' != ''">
+      <GCC_CPP_AVR
+        Remove="@(GCC_CPP_AVR)"
+        Condition="'%(Identity)' != '@(SelectedFiles)'" />
+    </ItemGroup>
+    <ItemGroup>
+      <GCC_CPP_AVR_tlog
+        Include="%(GCC_CPP_AVR.Outputs)"
+        Condition="'%(GCC_CPP_AVR.Outputs)' != '' and '%(GCC_CPP_AVR.ExcludedFromBuild)' != 'true'">
+        <Source>@(GCC_CPP_AVR, '|')</Source>
+      </GCC_CPP_AVR_tlog>
+    </ItemGroup>
+    <Message
+      Importance="High"
+      Text="%(GCC_CPP_AVR.ExecutionDescription)" />
+    <WriteLinesToFile
+      Condition="'@(GCC_CPP_AVR_tlog)' != '' and '%(GCC_CPP_AVR_tlog.ExcludedFromBuild)' != 'true'"
+      File="$(IntDir)$(ProjectName).write.1.tlog"
+      Lines="^%(GCC_CPP_AVR_tlog.Source);@(GCC_CPP_AVR_tlog-&gt;'%(Fullpath)')" />
+    <GCC_CPP_AVR
+      Condition="'@(GCC_CPP_AVR)' != '' and '%(GCC_CPP_AVR.ExcludedFromBuild)' != 'true'"
+      CommandLineTemplate="%(GCC_CPP_AVR.CommandLineTemplate)"
+      AdditionalOptions="%(GCC_CPP_AVR.AdditionalOptions)"
+      Inputs="%(GCC_CPP_AVR.Identity)" />
+  </Target>
+  <PropertyGroup>
+    <ComputeLinkInputsTargets>
+            $(ComputeLinkInputsTargets);
+            ComputeGCC_CPP_AVROutput;
+          </ComputeLinkInputsTargets>
+    <ComputeLibInputsTargets>
+            $(ComputeLibInputsTargets);
+            ComputeGCC_CPP_AVROutput;
+          </ComputeLibInputsTargets>
+  </PropertyGroup>
+  <Target
+    Name="ComputeGCC_CPP_AVROutput"
+    Condition="'@(GCC_CPP_AVR)' != ''">
+    <ItemGroup>
+      <GCC_CPP_AVRDirsToMake
+        Condition="'@(GCC_CPP_AVR)' != '' and '%(GCC_CPP_AVR.ExcludedFromBuild)' != 'true'"
+        Include="%(GCC_CPP_AVR.Outputs)" />
+      <Link
+        Include="%(GCC_CPP_AVRDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+      <Lib
+        Include="%(GCC_CPP_AVRDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+      <ImpLib
+        Include="%(GCC_CPP_AVRDirsToMake.Identity)"
+        Condition="'%(Extension)'=='.obj' or '%(Extension)'=='.res' or '%(Extension)'=='.rsc' or '%(Extension)'=='.lib'" />
+    </ItemGroup>
+    <MakeDir
+      Directories="@(GCC_CPP_AVRDirsToMake-&gt;'%(RootDir)%(Directory)')" />
+  </Target>
+</Project>

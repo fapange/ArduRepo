@@ -1,0 +1,24 @@
+﻿Build started 7/17/2013 10:25:25 AM.
+     1>Project "G:\ArduRepo\ArduPlane\ArduPlane.vcxproj" on node 2 (Build target(s)).
+     1>PreBuildEvent:
+         call .\_vsaddin\build_all_begin.bat ".\_vsAddIn\_build\" "ArduPlane"
+         ".\_vsAddIn\_build\"
+         
+         :VCEnd
+         Could Not Find G:\ArduRepo\ArduPlane\_vsAddIn\_build\*.o
+         Could Not Find G:\ArduRepo\ArduPlane\_vsAddIn\_build\*.a
+         Could Not Find G:\ArduRepo\ArduPlane\_vsAddIn\_build\*.eep
+         Could Not Find G:\ArduRepo\ArduPlane\_vsAddIn\_build\*.elf
+         Could Not Find G:\ArduRepo\ArduPlane\_vsAddIn\_build\*.hex
+       PostBuildEvent:
+         call .\_vsAddIn\link_all.bat .\_vsAddIn\_build\ ArduPlane  ".\_vsAddIn\_build\"
+         :VCEnd
+         The system cannot find the path specified.
+         Failed to link ArduPlane.cpp.elf
+     1>C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V110\Microsoft.CppCommon.targets(134,5): error MSB3073: The command "call .\_vsAddIn\link_all.bat .\_vsAddIn\_build\ ArduPlane  ".\_vsAddIn\_build\"
+C:\Program Files (x86)\MSBuild\Microsoft.Cpp\v4.0\V110\Microsoft.CppCommon.targets(134,5): error MSB3073: :VCEnd" exited with code 3.
+     1>Done Building Project "G:\ArduRepo\ArduPlane\ArduPlane.vcxproj" (Build target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:00.13
