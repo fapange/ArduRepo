@@ -2059,6 +2059,7 @@ namespace ArdupilotMega.GCSViews
                 //cumDist.Add(MainV2.missionDist);
             }
             MainV2.home = new PointLatLng(cmds[0].lat, cmds[0].lng);
+            MainV2.abortDist = MainV2.missionDist;
         }
 
 
@@ -3703,22 +3704,22 @@ namespace ArdupilotMega.GCSViews
         {
             // not async
             if (routes == null) return;
-            this.Invoke((System.Windows.Forms.MethodInvoker)delegate()
-             {
+            //this.Invoke((System.Windows.Forms.MethodInvoker)delegate()
+            // {
                  routes.Markers.Clear();
                  routes.Routes.Clear();
-             });
+            // });
         }
         // to prevent cross thread calls while in a draw and exception
         private void updateClearSugPolygons()
         {
             // not async
-            this.Invoke((System.Windows.Forms.MethodInvoker)delegate()
-            {
+            //this.Invoke((System.Windows.Forms.MethodInvoker)delegate()
+            //{
                 sug_polygons.Markers.Clear();
                 //sug_polygons.Routes.Clear();
                 sug_polygons.Polygons.Clear();
-            });
+            //});
         }
 #endif
 
@@ -4041,7 +4042,7 @@ namespace ArdupilotMega.GCSViews
                 Hazards.Markers.Clear();
                 Hazards.Polygons.Clear();
                 hz.Points.Clear();
-
+                GMapPolygon ha = new GMapPolygon(new List<PointLatLng>(),"test");
                 while (!sr.EndOfStream)
                 {
                     string line = sr.ReadLine();
@@ -4051,6 +4052,7 @@ namespace ArdupilotMega.GCSViews
                         {
                             Hazards.Polygons.Add(new GMapPolygon(hz.Points, "hz fd") { Stroke = hz.Stroke, Fill = hz.Fill });
                             //Hazards.Polygons.Add(hz);
+                            ha.Points.AddRange(hz.Points);
                             hz.Points.Clear();
                         }
                         continue;
@@ -4063,10 +4065,16 @@ namespace ArdupilotMega.GCSViews
                 }
 
                 // update flightdata
-                Hazards.Polygons.Add(new GMapPolygon(hz.Points, "hz fd") { Stroke = hz.Stroke, Fill = hz.Fill });
+                if (hz.Points.Count > 0)
+                {
+                    Hazards.Polygons.Add(new GMapPolygon(hz.Points, "hz fd") { Stroke = hz.Stroke, Fill = hz.Fill });
+                    //Hazards.Polygons.Add(hz);
+                    ha.Points.AddRange(hz.Points);
+                    hz.Points.Clear();
+                }
                 //Hazards.Polygons.Add(hz);
 
-                MainMap.UpdatePolygonLocalPosition(hz);
+                MainMap.UpdatePolygonLocalPosition(ha);
 
                 MainMap.Invalidate();
             }
@@ -4255,10 +4263,22 @@ namespace ArdupilotMega.GCSViews
         private List<Locationwp> checkHazards(PointLatLng s, PointLatLng e)
         {
             List<Locationwp> path = new List<Locationwp>();
-            List<Locationwp> path1 = new List<Locationwp>();
-            List<Locationwp> path2 = new List<Locationwp>();
-            List<Tuple<PointLatLng, PointLatLng, double>> tup = new List<Tuple<PointLatLng, PointLatLng, double>>();
-            List<Tuple<int, int, double>> tup1 = new List<Tuple<int, int, double>>();
+            if (Hazards == null || Hazards.Polygons == null || Hazards.Polygons.Count == 0)
+            {
+                Locationwp item = new Locationwp();
+                item.lat = (float)s.Lat;
+                item.lng = (float)s.Lng;
+                path.Add(item);
+                item.lat = (float)e.Lat;
+                item.lng = (float)e.Lng;
+                path.Add(item);
+                return path;
+            }
+
+            //List<Locationwp> path1 = new List<Locationwp>();
+            //List<Locationwp> path2 = new List<Locationwp>();
+            //List<Tuple<PointLatLng, PointLatLng, double>> tup = new List<Tuple<PointLatLng, PointLatLng, double>>();
+            //List<Tuple<int, int, double>> tup1 = new List<Tuple<int, int, double>>();
 
 
             PointLatLng ems = new PointLatLng(e.Lat - s.Lat, e.Lng - s.Lng);
@@ -4269,7 +4289,6 @@ namespace ArdupilotMega.GCSViews
                     path = findPath(s, e, m.Points);
                 }
             }
-
             if (path.Count == 0)
             {
                 Locationwp item = new Locationwp();
@@ -4279,6 +4298,7 @@ namespace ArdupilotMega.GCSViews
                 item.lat = (float)e.Lat;
                 item.lng = (float)e.Lng;
                 path.Add(item);
+                return path;
             }
             return path;
         }  
@@ -4287,9 +4307,9 @@ namespace ArdupilotMega.GCSViews
         {
             PointLatLng currentloc = new PointLatLng(0, 0);
             MainV2.fpw = panelAction.Width;
-            //int p1idx = missionPoints.Count > 1 ? 1 : 0;
-            //PointLatLng firstPoint = new PointLatLng(missionPoints[p1idx].Lat, missionPoints[p1idx].Lng);
-
+            int p1idx = missionPoints.Count > 1 ? 1 : 0;
+            PointLatLng firstPoint = new PointLatLng(missionPoints[p1idx].Lat, missionPoints[p1idx].Lng);
+            float firstDist = (float)MainMap.Manager.GetDistance(firstPoint, MainV2.home);
             try
             {
 #if UDP_DATA
@@ -4427,16 +4447,17 @@ namespace ArdupilotMega.GCSViews
                             if (myStatus != missionStatus.Warning)
                             {
                                 // Find location where the mission may need to be aborted because of insufficient battery charge
-                                for (float d = MainV2.maxDistLeft; d >= 0; d -= 1.0f)
+                                //for (float d = MainV2.maxDistLeft; d >= 0; d -= 1.0f)
+                                for (float d = MainV2.abortDist+1000; d >= 0; d -= 1.0f)
                                 {
                                     MainV2.abortDist = Math.Min(odometer + d, MainV2.missionDist);
                                     MainV2.abortTime = MainV2.abortDist / (60.0f * MainV2.avgSpeed[4]);
                                     MainV2.abortLoc = OdometerToLatLng(MainV2.abortDist);
-                                    //haz_sug = checkHazards(MainV2.abortLoc, firstPoint);
-                                    //float haz_dist = (float)pathLength(haz_sug);
-                                    //MainV2.abortHomeDist = 1000.0f * (float)(haz_dist + MainMap.Manager.GetDistance(firstPoint, MainV2.home));
-                                    PointLatLng firstPoint = new PointLatLng(missionPoints[1].Lat, missionPoints[1].Lng);
-                                    MainV2.abortHomeDist = 1000.0f * (float)(MainMap.Manager.GetDistance(firstPoint, MainV2.abortLoc) + MainMap.Manager.GetDistance(firstPoint, MainV2.home));
+                                    haz_sug = checkHazards(MainV2.abortLoc, firstPoint);
+                                    float haz_dist = (float)pathLength(haz_sug);
+                                    MainV2.abortHomeDist = 1000.0f * (haz_dist + firstDist);
+                                    //PointLatLng firstPoint = new PointLatLng(missionPoints[1].Lat, missionPoints[1].Lng);
+                                    //MainV2.abortHomeDist = 1000.0f * (float)(MainMap.Manager.GetDistance(firstPoint, MainV2.abortLoc) + MainMap.Manager.GetDistance(firstPoint, MainV2.home));
                                     MainV2.abortHomeTime = MainV2.abortHomeDist / (60.0f * MainV2.avgSpeed[4]);
                                     float hd = d + MainV2.abortHomeDist;
                                     if (hd <= MainV2.maxDistLeft) break;
@@ -4450,8 +4471,8 @@ namespace ArdupilotMega.GCSViews
                                     myStatus = missionStatus.InsufficientCharge;
 
                                 int idx = getCurrentLegNo(MainV2.abortDist);
-                                cmds_sug = cmds.GetRange(0, idx);
-                                //cmds_sug = haz_sug;
+                                //cmds_sug = cmds.GetRange(0, idx);
+                                cmds_sug = haz_sug;
                                 /*cmds_sug = cmds.GetRange(0, cmds.Count);
                                 Locationwp temp = cmds_sug[idx - 1];
                                 temp.lat = (float)MainV2.abortLoc.Lat;
@@ -4460,6 +4481,8 @@ namespace ArdupilotMega.GCSViews
                                 cmds_sug.Add(temp);
                                 cmds_sug.Add(cmds_sug[1]);
                                 cmds_sug.Add(cmds_sug[0]);*/
+                                //processToScreen(cmds);
+                                //writeKML();
                             }
 
                             if ((MainV2.eodTime <= MainV2.abortHomeTime) && (myStatus != missionStatus.Warning))
