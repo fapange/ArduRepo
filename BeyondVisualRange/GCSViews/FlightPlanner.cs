@@ -1,4 +1,5 @@
 ﻿#define SLV_ADDED
+
 //#define UDP_DATA
 
 using System;
@@ -35,6 +36,8 @@ namespace ArdupilotMega.GCSViews
 {
     partial class FlightPlanner : MyUserControl
     {
+        private const float SMALL_NUM = 0.00000001f;
+
         private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         //int tickStart = 0;
         public static BatteryGraph batteryPlot = null;
@@ -4148,17 +4151,31 @@ namespace ArdupilotMega.GCSViews
             myStatus = missionStatus.Normal;
         }
 
+        private float perp(PointLatLng u, PointLatLng v)
+        {
+            return (float)(u.Lat * v.Lng - u.Lng * v.Lat);
+        }
+
         private bool collisionExist(PointLatLng s, PointLatLng e, List<PointLatLng> m)
         {
-            PointLatLng ems = new PointLatLng(e.Lat - s.Lat, e.Lng - s.Lng);
+            PointLatLng u = new PointLatLng(e.Lat - s.Lat, e.Lng - s.Lng);
             for (int i = 0; i < m.Count; i++)
             {
                 int j = (i + 1) % (m.Count);
-                PointLatLng vmw = new PointLatLng(m[i].Lat - m[j].Lat, m[i].Lng - m[j].Lng);
-                double t = (ems.Lat * vmw.Lat + ems.Lng * vmw.Lng) / (vmw.Lat * vmw.Lat + vmw.Lng * vmw.Lng);
-                if (t > 0 && t < 1)
+                PointLatLng ss = new PointLatLng(m[j].Lat, m[j].Lng);
+                PointLatLng se = new PointLatLng(m[i].Lat, m[i].Lng);
+                PointLatLng v = new PointLatLng(se.Lat - ss.Lat, se.Lng - ss.Lng);
+                PointLatLng w = new PointLatLng(s.Lat - ss.Lat, s.Lng - ss.Lng);
+                if (w.Lat != 0 || w.Lng != 0) // s is a point in m
                 {
-                    return true;
+                    float D = perp(u, v);
+                    if (Math.Abs(D) > SMALL_NUM) // segments are parallel
+                    {
+                        float sI = perp(v, w) / D;
+                        float tI = perp(u, w) / D;
+                        if ((sI > 0 && sI <= 1) && (tI >= 0 && tI < 1))
+                            return true;
+                    }
                 }
             }
             return false;
@@ -4189,14 +4206,15 @@ namespace ArdupilotMega.GCSViews
         private List<Locationwp> findClearPath(List<PointLatLng> m, PointLatLng s, PointLatLng e)
         {
             int idx = 0;
-            while (collisionExist(m[idx], e, m) && idx < m.Count) idx++;
+            while (idx < m.Count && collisionExist(m[idx], e, m)) idx++;
 
             List<Locationwp> path = new List<Locationwp>();
             Locationwp item = new Locationwp();
+            item.id = 16;
             item.lat = (float)s.Lat;
             item.lng = (float)s.Lng;
             path.Add(item);
-            for (int i = 0; i < idx; i++)
+            for (int i = 0; i <= idx; i++)
             {
                 item.lat = (float)m[i].Lat;
                 item.lng = (float)m[i].Lng;
@@ -4223,18 +4241,25 @@ namespace ArdupilotMega.GCSViews
         private List<Locationwp> findPath(PointLatLng s, PointLatLng e, List<PointLatLng> m)
         {
             List<Tuple<int, int, double>> tup1 = new List<Tuple<int, int, double>>();
-            PointLatLng ems = new PointLatLng(e.Lat - s.Lat, e.Lng - s.Lng);
+
+            PointLatLng u = new PointLatLng(e.Lat - s.Lat, e.Lng - s.Lng);
             for (int i = 0; i < m.Count; i++)
             {
                 int j = (i + 1) % (m.Count);
-                PointLatLng vmw = new PointLatLng(m[i].Lat - m[j].Lat, m[i].Lng - m[j].Lng);
-                double t = (ems.Lat * vmw.Lat + ems.Lng * vmw.Lng) / (vmw.Lat * vmw.Lat + vmw.Lng * vmw.Lng);
-                if (t > 0 && t < 1)
+                PointLatLng v = new PointLatLng(m[i].Lat - m[j].Lat, m[i].Lng - m[j].Lng);
+                PointLatLng w = new PointLatLng(s.Lat - m[j].Lat, s.Lng - m[j].Lng);
+                float D = perp(u, v);
+                if (Math.Abs(D) > SMALL_NUM) // segments are parallel
                 {
-                    PointLatLng x = new PointLatLng(m[j].Lat + t * vmw.Lat, m[j].Lng + t * vmw.Lng);
-                    PointLatLng xms = new PointLatLng(x.Lat - s.Lat, x.Lng - s.Lng); ;
-                    double d = Math.Sqrt(Math.Pow(xms.Lat, 2) + Math.Pow(xms.Lng, 2));
-                    tup1.Add(new Tuple<int, int, double>(i, j, d));
+                    float sI = perp(v, w) / D;
+                    float tI = perp(u, w) / D;
+                    if ((sI > 0 && sI < 1) && (tI > 0 && tI < 1))
+                    {
+                        PointLatLng x = new PointLatLng(s.Lat + sI * u.Lat, s.Lng + sI * u.Lng);
+                        PointLatLng xms = new PointLatLng(x.Lat - s.Lat, x.Lng - s.Lng); ;
+                        double d = MainMap.Manager.GetDistance(s, x); 
+                        tup1.Add(new Tuple<int, int, double>(i, j, d));
+                    }
                 }
             }
             if (tup1.Count > 0)
@@ -4266,6 +4291,7 @@ namespace ArdupilotMega.GCSViews
             if (Hazards == null || Hazards.Polygons == null || Hazards.Polygons.Count == 0)
             {
                 Locationwp item = new Locationwp();
+                item.id = 16;
                 item.lat = (float)s.Lat;
                 item.lng = (float)s.Lng;
                 path.Add(item);
@@ -4281,7 +4307,7 @@ namespace ArdupilotMega.GCSViews
             //List<Tuple<int, int, double>> tup1 = new List<Tuple<int, int, double>>();
 
 
-            PointLatLng ems = new PointLatLng(e.Lat - s.Lat, e.Lng - s.Lng);
+            //PointLatLng ems = new PointLatLng(e.Lat - s.Lat, e.Lng - s.Lng);
             foreach (GMapPolygon m in Hazards.Polygons)
             {
                 if (collisionExist(s, e, m.Points))
@@ -4292,6 +4318,7 @@ namespace ArdupilotMega.GCSViews
             if (path.Count == 0)
             {
                 Locationwp item = new Locationwp();
+                item.id = 16;
                 item.lat = (float)s.Lat;
                 item.lng = (float)s.Lng;
                 path.Add(item);
@@ -4332,7 +4359,7 @@ namespace ArdupilotMega.GCSViews
                     //float rms_soc2_consumption = 0.0022f;   // 0.002% decrease per meter
                     //float rms_soc3_consumption = 0.0023f;   // implies 2% decrease per Km
                     //float rms_soc4_consumption = 0.0024f;   // implies a max distance of 50Km
-                    float consumptionRate = 0.75f;
+                    float consumptionRate = 0.66f;
 
                     for (int i = 0; i < factor; i++)
                     {
@@ -4471,8 +4498,8 @@ namespace ArdupilotMega.GCSViews
                                     myStatus = missionStatus.InsufficientCharge;
 
                                 int idx = getCurrentLegNo(MainV2.abortDist);
-                                //cmds_sug = cmds.GetRange(0, idx);
-                                cmds_sug = haz_sug;
+                                cmds_sug = cmds.GetRange(0, idx);
+                                cmds_sug.AddRange(haz_sug);
                                 /*cmds_sug = cmds.GetRange(0, cmds.Count);
                                 Locationwp temp = cmds_sug[idx - 1];
                                 temp.lat = (float)MainV2.abortLoc.Lat;
@@ -4489,18 +4516,21 @@ namespace ArdupilotMega.GCSViews
                             {
                                 myStatus = missionStatus.Warning;
                                 int idx = MainV2.segmentNo;
-                                Locationwp temp = cmds[idx - 1];
-                                temp.lat = (float)currentloc.Lat;
-                                temp.lng = (float)currentloc.Lng;
+                                //Locationwp temp = cmds[idx - 1];
+                                //temp.lat = (float)currentloc.Lat;
+                                //temp.lng = (float)currentloc.Lng;
 
                                 MainV2.abortLoc = currentloc;
 
-                                cmds.RemoveRange(idx, cmds.Count - idx);
-                                cmds.Add(temp);
-                                cmds.Add(cmds[1]);
-                                cmds.Add(cmds[0]);
+                                cmds.Clear();
+                                cmds = cmds_sug; //.AddRange(cmds_sug);
+                                //cmds.RemoveRange(idx, cmds.Count - idx);
+                                //cmds.AddRange(haz_sug);
+                                //cmds.Add(temp);
+                                //cmds.Add(cmds[1]);
+                                //cmds.Add(cmds[0]);
 
-                                cmds_sug = cmds;
+                                //cmds_sug = cmds;
                                 //cmds = cmds_sug;
 
                                 processToScreen(cmds);
