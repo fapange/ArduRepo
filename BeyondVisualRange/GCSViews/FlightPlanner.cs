@@ -4140,8 +4140,116 @@ namespace ArdupilotMega.GCSViews
             myStatus = missionStatus.Normal;
         }
 
-        private List<Locationwp> checkHazard(int s, int e, GMapPolygon m)
+        private bool collisionExist(PointLatLng s, PointLatLng e, List<PointLatLng> m)
         {
+            PointLatLng ems = new PointLatLng(e.Lat - s.Lat, e.Lng - s.Lng);
+            for (int i = 0; i < m.Count; i++)
+            {
+                int j = (i + 1) % (m.Count);
+                PointLatLng vmw = new PointLatLng(m[i].Lat - m[j].Lat, m[i].Lng - m[j].Lng);
+                double t = (ems.Lat * vmw.Lat + ems.Lng * vmw.Lng) / (vmw.Lat * vmw.Lat + vmw.Lng * vmw.Lng);
+                if (t > 0 && t < 1)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private List<Locationwp> findLeftPath(int idx, List<PointLatLng> m, PointLatLng s, PointLatLng e)
+        {
+            List<PointLatLng> lm = new List<PointLatLng>();
+            for (int i = idx; i >= 0; i--)
+                lm.Add(m[i]);
+            for (int i = m.Count-1; i > idx; i--)
+                lm.Add(m[i]);
+
+            return findClearPath(lm,s,e);
+        }
+
+        private List<Locationwp> findRightPath(int idx, List<PointLatLng> m, PointLatLng s, PointLatLng e)
+        {
+            List<PointLatLng> lm = new List<PointLatLng>();
+            for (int i = idx; i < m.Count; i++)
+                lm.Add(m[i]);
+            for (int i = 0; i < idx; i++)
+                lm.Add(m[i]);
+
+            return findClearPath(lm,s,e);
+        }
+
+        private List<Locationwp> findClearPath(List<PointLatLng> m, PointLatLng s, PointLatLng e)
+        {
+            int idx = 0;
+            while (collisionExist(m[idx], e, m) && idx < m.Count) idx++;
+
+            List<Locationwp> path = new List<Locationwp>();
+            Locationwp item = new Locationwp();
+            item.lat = (float)s.Lat;
+            item.lng = (float)s.Lng;
+            path.Add(item);
+            for (int i = 0; i < idx; i++)
+            {
+                item.lat = (float)m[i].Lat;
+                item.lng = (float)m[i].Lng;
+                path.Add(item);
+            }
+            item.lat = (float)e.Lat;
+            item.lng = (float)e.Lng;
+            path.Add(item);
+            return path;
+        }
+
+        private double pathLength(List<Locationwp> path)
+        {
+            double d = 0;
+            for (int i = 1; i < path.Count; i++)
+            {
+                PointLatLng p1 = new PointLatLng(path[i].lat, path[i].lng);
+                PointLatLng p2 = new PointLatLng(path[i-1].lat, path[i-1].lng);
+                d += MainMap.Manager.GetDistance(p1,p2);
+            }
+            return d;
+        }
+
+        private List<Locationwp> findPath(PointLatLng s, PointLatLng e, List<PointLatLng> m)
+        {
+            List<Tuple<int, int, double>> tup1 = new List<Tuple<int, int, double>>();
+            PointLatLng ems = new PointLatLng(e.Lat - s.Lat, e.Lng - s.Lng);
+            for (int i = 0; i < m.Count; i++)
+            {
+                int j = (i + 1) % (m.Count);
+                PointLatLng vmw = new PointLatLng(m[i].Lat - m[j].Lat, m[i].Lng - m[j].Lng);
+                double t = (ems.Lat * vmw.Lat + ems.Lng * vmw.Lng) / (vmw.Lat * vmw.Lat + vmw.Lng * vmw.Lng);
+                if (t > 0 && t < 1)
+                {
+                    PointLatLng x = new PointLatLng(m[j].Lat + t * vmw.Lat, m[j].Lng + t * vmw.Lng);
+                    PointLatLng xms = new PointLatLng(x.Lat - s.Lat, x.Lng - s.Lng); ;
+                    double d = Math.Sqrt(Math.Pow(xms.Lat, 2) + Math.Pow(xms.Lng, 2));
+                    tup1.Add(new Tuple<int, int, double>(i, j, d));
+                }
+            }
+            if (tup1.Count > 0)
+            {
+                double d = tup1[0].Item3;
+                int idx1 = tup1[0].Item1;
+                int idx2 = tup1[0].Item2;
+                for (int i = 1; i < tup1.Count; i++)
+                {
+                    if (tup1[i].Item3 < d)
+                    {
+                        idx1 = tup1[i].Item1;
+                        idx2 = tup1[i].Item2;
+                    }
+                }
+                List<Locationwp> pathL = findLeftPath(idx1, m, s, e);
+                List<Locationwp> pathR = findRightPath(idx2, m, s, e);
+                if (pathLength(pathL) < pathLength(pathR))
+                    return pathL;
+                else
+                    return pathR;
+            }
+            return new List<Locationwp>();
         }
 
         private List<Locationwp> checkHazards(PointLatLng s, PointLatLng e)
@@ -4151,72 +4259,20 @@ namespace ArdupilotMega.GCSViews
             List<Locationwp> path2 = new List<Locationwp>();
             List<Tuple<PointLatLng, PointLatLng, double>> tup = new List<Tuple<PointLatLng, PointLatLng, double>>();
             List<Tuple<int, int, double>> tup1 = new List<Tuple<int, int, double>>();
+
+
             PointLatLng ems = new PointLatLng(e.Lat - s.Lat, e.Lng - s.Lng);
             foreach (GMapPolygon m in Hazards.Polygons)
             {
+                if (collisionExist(s, e, m.Points))
+                {
+                    path = findPath(s, e, m.Points);
+                }
+            }
 
-                for (int i = 0; i < m.Points.Count; i++)
-                {
-                    int j = (i+1) % (m.Points.Count);
-                    PointLatLng vmw = new PointLatLng(m.Points[i].Lat - m.Points[j].Lat, m.Points[i].Lng - m.Points[j].Lng);
-                    double t = (ems.Lat * vmw.Lat + ems.Lng * vmw.Lng) / (vmw.Lat * vmw.Lat + vmw.Lng * vmw.Lng);
-                    if (t > 0 && t < 1)
-                    {
-                        PointLatLng x = new PointLatLng(m.Points[j].Lat + t*vmw.Lat, m.Points[j].Lng + t*vmw.Lng);
-                        PointLatLng xms = new PointLatLng(x.Lat - s.Lat, x.Lng - s.Lng); ;
-                        double d = Math.Sqrt(Math.Pow(xms.Lat,2) + Math.Pow(xms.Lng,2));
-                        tup.Add(new Tuple<PointLatLng, PointLatLng, double>(m.Points[i], m.Points[j], d));
-                        tup1.Add(new Tuple<int, int, double>(i, j, d));
-                    }
-                }
-                if (tup1.Count > 0)
-                {
-                    double d = tup1[0].Item3;
-                    int idx1 = tup1[0].Item1;
-                    int idx2 = tup1[0].Item2;
-                    for (int i = 1; i < tup1.Count; i++)
-                    {
-                        if (tup1[i].Item3 < d)
-                        {
-                            idx1 = tup1[i].Item1;
-                            idx2 = tup1[i].Item2;
-                        }
-                    }
-                    checkHazard(idx1, idx2, m);
-                }
-            }
-            Locationwp item = new Locationwp();
-            if (tup.Count > 0)
+            if (path.Count == 0)
             {
-                double d = tup[0].Item3;
-                PointLatLng point1 = tup[0].Item1;
-                PointLatLng point2 = tup[0].Item2;
-                for (int i = 1; i < tup.Count; i++)
-                {
-                    if (tup[i].Item3 < d)
-                    {
-                        point1 = tup[i].Item1;
-                        point2 = tup[i].Item2;
-                    }
-                }
-                item.lat = (float)s.Lat;
-                item.lng = (float)s.Lng;
-                path1.Add(item);
-                path1.AddRange(checkHazard(point1, e));
-                path2.Add(item);
-                path2.AddRange(checkHazard(point2, e));
-                double d1=0, d2=0;
-                for (int i = 1; i < path1.Count; i++)
-                    d1 += Math.Sqrt(Math.Pow(path1[i].lat - path1[i - 1].lat, 2) + Math.Pow(path1[i].lng - path1[i - 1].lng, 2));
-                for (int i = 1; i < path2.Count; i++)
-                    d2 += Math.Sqrt(Math.Pow(path2[i].lat - path2[i - 1].lat, 2) + Math.Pow(path2[i].lng - path2[i - 1].lng, 2));
-                if (d1 < d2)
-                    path = path1;
-                else
-                    path = path2;
-            }
-            else
-            {
+                Locationwp item = new Locationwp();
                 item.lat = (float)s.Lat;
                 item.lng = (float)s.Lng;
                 path.Add(item);
@@ -4231,7 +4287,8 @@ namespace ArdupilotMega.GCSViews
         {
             PointLatLng currentloc = new PointLatLng(0, 0);
             MainV2.fpw = panelAction.Width;
-            PointLatLng firstPoint = new PointLatLng(missionPoints[1].Lat, missionPoints[1].Lng);
+            //int p1idx = missionPoints.Count > 1 ? 1 : 0;
+            //PointLatLng firstPoint = new PointLatLng(missionPoints[p1idx].Lat, missionPoints[p1idx].Lng);
 
             try
             {
@@ -4375,8 +4432,11 @@ namespace ArdupilotMega.GCSViews
                                     MainV2.abortDist = Math.Min(odometer + d, MainV2.missionDist);
                                     MainV2.abortTime = MainV2.abortDist / (60.0f * MainV2.avgSpeed[4]);
                                     MainV2.abortLoc = OdometerToLatLng(MainV2.abortDist);
-                                    haz_sug = checkHazards(MainV2.abortLoc, firstPoint);
-                                    MainV2.abortHomeDist = 1000.0f * (float)(MainMap.Manager.GetDistance(MainV2.abortLoc, firstPoint) + MainMap.Manager.GetDistance(firstPoint, MainV2.home));
+                                    //haz_sug = checkHazards(MainV2.abortLoc, firstPoint);
+                                    //float haz_dist = (float)pathLength(haz_sug);
+                                    //MainV2.abortHomeDist = 1000.0f * (float)(haz_dist + MainMap.Manager.GetDistance(firstPoint, MainV2.home));
+                                    PointLatLng firstPoint = new PointLatLng(missionPoints[1].Lat, missionPoints[1].Lng);
+                                    MainV2.abortHomeDist = 1000.0f * (float)(MainMap.Manager.GetDistance(firstPoint, MainV2.abortLoc) + MainMap.Manager.GetDistance(firstPoint, MainV2.home));
                                     MainV2.abortHomeTime = MainV2.abortHomeDist / (60.0f * MainV2.avgSpeed[4]);
                                     float hd = d + MainV2.abortHomeDist;
                                     if (hd <= MainV2.maxDistLeft) break;
@@ -4390,14 +4450,16 @@ namespace ArdupilotMega.GCSViews
                                     myStatus = missionStatus.InsufficientCharge;
 
                                 int idx = getCurrentLegNo(MainV2.abortDist);
-                                cmds_sug = cmds.GetRange(0, cmds.Count);
+                                cmds_sug = cmds.GetRange(0, idx);
+                                //cmds_sug = haz_sug;
+                                /*cmds_sug = cmds.GetRange(0, cmds.Count);
                                 Locationwp temp = cmds_sug[idx - 1];
                                 temp.lat = (float)MainV2.abortLoc.Lat;
                                 temp.lng = (float)MainV2.abortLoc.Lng;
                                 cmds_sug.RemoveRange(idx, cmds_sug.Count - idx);
                                 cmds_sug.Add(temp);
                                 cmds_sug.Add(cmds_sug[1]);
-                                cmds_sug.Add(cmds_sug[0]);
+                                cmds_sug.Add(cmds_sug[0]);*/
                             }
 
                             if ((MainV2.eodTime <= MainV2.abortHomeTime) && (myStatus != missionStatus.Warning))
@@ -4416,6 +4478,7 @@ namespace ArdupilotMega.GCSViews
                                 cmds.Add(cmds[0]);
 
                                 cmds_sug = cmds;
+                                //cmds = cmds_sug;
 
                                 processToScreen(cmds);
                                 writeKML();
