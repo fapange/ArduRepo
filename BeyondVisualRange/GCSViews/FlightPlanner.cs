@@ -4054,7 +4054,6 @@ namespace ArdupilotMega.GCSViews
                         if (hz.Points.Count > 0)
                         {
                             Hazards.Polygons.Add(new GMapPolygon(hz.Points, "hz fd") { Stroke = hz.Stroke, Fill = hz.Fill });
-                            //Hazards.Polygons.Add(hz);
                             ha.Points.AddRange(hz.Points);
                             hz.Points.Clear();
                         }
@@ -4071,14 +4070,10 @@ namespace ArdupilotMega.GCSViews
                 if (hz.Points.Count > 0)
                 {
                     Hazards.Polygons.Add(new GMapPolygon(hz.Points, "hz fd") { Stroke = hz.Stroke, Fill = hz.Fill });
-                    //Hazards.Polygons.Add(hz);
                     ha.Points.AddRange(hz.Points);
                     hz.Points.Clear();
                 }
-                //Hazards.Polygons.Add(hz);
-
                 MainMap.UpdatePolygonLocalPosition(ha);
-
                 MainMap.Invalidate();
             }
         }
@@ -4109,10 +4104,6 @@ namespace ArdupilotMega.GCSViews
                         {
                             sw.WriteLine(pll.Lat + " " + pll.Lng);
                         }
-
-                        //PointLatLng pll2 = drawnpolygon.Points[0];
-
-                        //sw.WriteLine(pll2.Lat + " " + pll2.Lng);
                     }
                     else
                     {
@@ -4122,8 +4113,6 @@ namespace ArdupilotMega.GCSViews
                         }
 
                         PointLatLng pll2 = hz.Points[0];
-
-                        //sw.WriteLine(pll2.Lat + " " + pll2.Lng);
                     }
 
                     sw.Close();
@@ -4156,8 +4145,9 @@ namespace ArdupilotMega.GCSViews
             return (float)(u.Lat * v.Lng - u.Lng * v.Lat);
         }
 
-        private bool collisionExist(PointLatLng s, PointLatLng e, List<PointLatLng> m)
+        private Tuple<bool, double> collisionExist(PointLatLng s, PointLatLng e, List<PointLatLng> m)
         {
+            Tuple<bool, double> tup1 = new Tuple<bool, double>(false, 1e20);
             PointLatLng u = new PointLatLng(e.Lat - s.Lat, e.Lng - s.Lng);
             for (int i = 0; i < m.Count; i++)
             {
@@ -4174,11 +4164,17 @@ namespace ArdupilotMega.GCSViews
                         float sI = perp(v, w) / D;
                         float tI = perp(u, w) / D;
                         if ((sI > 0 && sI < 1) && (tI > 0 && tI < 1))
-                            return true;
+                        {
+                            PointLatLng x = new PointLatLng(s.Lat + sI * u.Lat, s.Lng + sI * u.Lng);
+                            PointLatLng xms = new PointLatLng(x.Lat - s.Lat, x.Lng - s.Lng); ;
+                            double d = MainMap.Manager.GetDistance(s, x);
+                            if (d < tup1.Item2)
+                                tup1 = new Tuple<bool, double>(true, d);
+                        }
                     }
                 }
             }
-            return false;
+            return tup1;
         }
 
         private List<Locationwp> findLeftPath(int idx, List<PointLatLng> m, PointLatLng s, PointLatLng e)
@@ -4208,7 +4204,7 @@ namespace ArdupilotMega.GCSViews
             int i;
             int k;
             int idx = 0;
-            while (idx < m.Count && collisionExist(m[idx], e, m)) idx++;
+            while (idx < m.Count && collisionExist(m[idx], e, m).Item1) idx++;
 
             List<Locationwp> path = new List<Locationwp>();
             Locationwp item = new Locationwp();
@@ -4221,7 +4217,7 @@ namespace ArdupilotMega.GCSViews
 
             // find out if any later points are visible from the abortLoc
             i = idx;
-            while(i>=0 && collisionExist(s, m[i], m)) i--;
+            while(i>=0 && collisionExist(s, m[i], m).Item1) i--;
             item.lat = (float)m[i].Lat;
             item.lng = (float)m[i].Lng;
             path.Add(item);
@@ -4229,14 +4225,15 @@ namespace ArdupilotMega.GCSViews
             for (int j = i; j < idx; j=k)
             {
                 k = idx;
-                while (k>j && collisionExist(m[j], m[k], m)) k--;
+                while (k>j && collisionExist(m[j], m[k], m).Item1) k--;
                 item.lat = (float)m[k].Lat;
                 item.lng = (float)m[k].Lng;
                 path.Add(item);
             }
-            item.lat = (float)e.Lat;
-            item.lng = (float)e.Lng;
-            path.Add(item);
+
+            //item.lat = (float)e.Lat;
+            //item.lng = (float)e.Lng;
+            //path.Add(item);
             return path;
         }
 
@@ -4276,6 +4273,7 @@ namespace ArdupilotMega.GCSViews
                     }
                 }
             }
+
             if (tup1.Count > 0)
             {
                 double d = tup1[0].Item3;
@@ -4299,13 +4297,71 @@ namespace ArdupilotMega.GCSViews
             return new List<Locationwp>();
         }
 
+        private List<GMapPolygon> sortHazards(GMap.NET.ObjectModel.ObservableCollectionThreadSafe<GMapPolygon> p, PointLatLng s, PointLatLng e)
+        {
+            List<GMapPolygon> sorted = new List<GMapPolygon>();
+            List<Tuple<GMapPolygon,bool,double>> tup = new List<Tuple<GMapPolygon,bool,double>>();
+            for (int i = 0; i < p.Count; i++)
+            {
+                Tuple<bool, double> col = collisionExist(s, e, p[i].Points);
+                tup.Add(new Tuple<GMapPolygon, bool, double>(p[i], col.Item1, col.Item2));
+            }
+            double minD = 1e20;
+            int k = 0;
+            int idx = 0;
+            while (tup.Count > 0)
+            {
+                if (k > tup.Count-1)
+                {
+                    k = 0;
+                    minD = 1e20;
+                    sorted.Add(tup[idx].Item1);
+                    tup.RemoveAt(idx);
+                    idx = 0;
+                    if (tup.Count == 0) break;
+                }
+                if (tup[k].Item3 < minD)
+                {
+                    minD = tup[k].Item3;
+                    idx = k;
+                }
+                k++;
+            }
+            return sorted;
+        }
+
+        private List<Locationwp> walkHazards(GMap.NET.ObjectModel.ObservableCollectionThreadSafe<GMapPolygon> p, PointLatLng s, PointLatLng e, List<Locationwp> path)
+        {
+            GMapOverlay ov = new GMapOverlay(MainMap, "haz");
+            foreach (GMapPolygon m in p) ov.Polygons.Add(m);
+
+            List<GMapPolygon> sorted = sortHazards(ov.Polygons, s, e);
+            PointLatLng ts = s;
+
+            foreach (GMapPolygon m in sorted)
+            {
+                if (collisionExist(ts, e, m.Points).Item1)
+                {
+                    path.AddRange(findPath(ts, e, m.Points));
+                    if (path.Count > 0)
+                    {
+                        ts.Lat = path[path.Count - 1].lat;
+                        ts.Lng = path[path.Count - 1].lng;
+                    }
+                    ov.Polygons.Remove(m);
+                    path = walkHazards(ov.Polygons, ts, e, path);
+                }
+            }
+            return path;
+        }
+
         private List<Locationwp> checkHazards(PointLatLng s, PointLatLng e)
         {
             List<Locationwp> path = new List<Locationwp>();
+            Locationwp item = new Locationwp();
+            item.id = 16;
             if (Hazards == null || Hazards.Polygons == null || Hazards.Polygons.Count == 0)
             {
-                Locationwp item = new Locationwp();
-                item.id = 16;
                 item.lat = (float)s.Lat;
                 item.lng = (float)s.Lng;
                 path.Add(item);
@@ -4315,24 +4371,17 @@ namespace ArdupilotMega.GCSViews
                 return path;
             }
 
-            //List<Locationwp> path1 = new List<Locationwp>();
-            //List<Locationwp> path2 = new List<Locationwp>();
-            //List<Tuple<PointLatLng, PointLatLng, double>> tup = new List<Tuple<PointLatLng, PointLatLng, double>>();
-            //List<Tuple<int, int, double>> tup1 = new List<Tuple<int, int, double>>();
+            path = walkHazards(Hazards.Polygons, s, e, path);
 
-
-            //PointLatLng ems = new PointLatLng(e.Lat - s.Lat, e.Lng - s.Lng);
-            foreach (GMapPolygon m in Hazards.Polygons)
+            if (path.Count > 0)
             {
-                if (collisionExist(s, e, m.Points))
-                {
-                    path = findPath(s, e, m.Points);
-                }
+                item.lat = (float)e.Lat;
+                item.lng = (float)e.Lng;
+                path.Add(item);
+                return path;
             }
-            if (path.Count == 0)
+            else
             {
-                Locationwp item = new Locationwp();
-                item.id = 16;
                 item.lat = (float)s.Lat;
                 item.lng = (float)s.Lng;
                 path.Add(item);
@@ -4341,7 +4390,6 @@ namespace ArdupilotMega.GCSViews
                 path.Add(item);
                 return path;
             }
-            return path;
         }  
 
         private void timer1_Tick(object sender, EventArgs e)
@@ -4369,12 +4417,8 @@ namespace ArdupilotMega.GCSViews
                     float delta_t = ((float)timer1.Interval/1000.0f); // sec
                     float delta_d = delta_t * 25.0f;        // meters
                     float rms_soc_consumption = 0.0020f;   // soc % per meter
-                    float cons_slope = 0.000003f;
-                    //float rms_soc1_consumption = 0.0021f;   // soc % per meter
-                    //float rms_soc2_consumption = 0.0022f;   // 0.002% decrease per meter
-                    //float rms_soc3_consumption = 0.0023f;   // implies 2% decrease per Km
-                    //float rms_soc4_consumption = 0.0024f;   // implies a max distance of 50Km
-                    float consumptionRate = 0.62f;
+                    float cons_slope = 0.000002f;
+                    float consumptionRate = 0.65f;
 
                     for (int i = 0; i < factor; i++)
                     {
@@ -4486,11 +4530,7 @@ namespace ArdupilotMega.GCSViews
                             MainV2.maxTimeLeft = Math.Min(MainV2.eodTime, MainV2.etaTime);
                             MainV2.maxLoc = OdometerToLatLng(Math.Min(odometer + MainV2.maxDistLeft, MainV2.missionDist));
 
-                            //if (myStatus != missionStatus.Warning)
-                            //{
-                            // Find location where the mission may need to be aborted because of insufficient battery charge
-                            //for (float d = MainV2.maxDistLeft; d >= 0; d -= 1.0f)
-                            for (float d = MainV2.abortDist+1000; d >= 0; d -= 1.0f)
+                            for (float d = MainV2.maxDistLeft; d >= 0; d -= 1.0f)
                             {
                                 MainV2.abortDist = Math.Min(odometer + d, MainV2.missionDist);
                                 MainV2.abortTime = MainV2.abortDist / (60.0f * MainV2.avgSpeed[4]);
@@ -4502,8 +4542,8 @@ namespace ArdupilotMega.GCSViews
                                 float hd = d + MainV2.abortHomeDist;
                                 if (hd <= MainV2.maxDistLeft) break;
                             }
-                            //}
 
+                            haz_sug = checkHazards(MainV2.abortLoc, firstPoint);
                             if (MainV2.etaTime >= MainV2.eodTime)
                             { // suggested plan in case it needs to be aborted
 
@@ -4529,12 +4569,8 @@ namespace ArdupilotMega.GCSViews
                                     batteryPlot.updatePoints(pointlist);
                                 }
                             }
-                            //else if ((MainV2.eodTime > MainV2.retHomeTime) && (myStatus == missionStatus.Warning))
-                            //    myStatus = missionStatus.Normal;
-
                         }
                     }
-
 
                     if (gcount == 0)
                     {
@@ -4578,11 +4614,6 @@ namespace ArdupilotMega.GCSViews
                         }
                         if (sugPoints.Count > 0)
                         {
-                            //sug_polygon = new GMapPolygon(sugPoints, "suggested");
-                            //sug_polygon.Stroke = new Pen(Color.DarkGoldenrod, 2);
-                            //sug_polygon.Stroke.DashStyle = DashStyle.Dash;
-                            //sug_polygons.Polygons.Add(sug_polygon);
-
                             if (sug_polygon == null)
                             {
                                 sug_polygon = new GMapPolygon(sugPoints, "suggested");
@@ -4611,7 +4642,6 @@ namespace ArdupilotMega.GCSViews
                             }
                         }
                     }
-
                     
                     if (myStatus != missionStatus.Normal)
                     {
@@ -4637,9 +4667,9 @@ namespace ArdupilotMega.GCSViews
                         routes.Markers.Add(new GMapMarkerQuad(currentloc, MainV2.cs.yaw, MainV2.cs.groundcourse, MainV2.cs.nav_bearing));
                     }
 
-                    count = ++count % 5;
-                    gcount = ++gcount % 5;
-                    pcount = ++pcount % 100;
+                    count = ++count % 10;
+                    gcount = ++gcount % 10;
+                    pcount = ++pcount % 10;
 #if UDP_DATA
                 }
 #endif
@@ -4647,119 +4677,9 @@ namespace ArdupilotMega.GCSViews
             catch (Exception ex) { Console.WriteLine("Planner(): " + ex.ToString()); } // bad config file
         }
 
-        /*public void CreateChart(ZedGraphControl zgc)
-        {
-            GraphPane myPane = zgc.GraphPane;
-
-            // Set the titles and axis labels
-            myPane.Title.Text = "Tuning";
-            myPane.XAxis.Title.Text = "Distance (Km)";
-            myPane.YAxis.Title.Text = "% charge";
-
-            // Show the x axis grid
-            myPane.XAxis.MajorGrid.IsVisible = true;
-
-            myPane.XAxis.Scale.Min = 0;
-            myPane.XAxis.Scale.Max = 5;
-
-            // Make the Y axis scale red
-            myPane.YAxis.Scale.FontSpec.FontColor = Color.White;
-            myPane.YAxis.Title.FontSpec.FontColor = Color.White;
-            // turn off the opposite tics so the Y tics don't show up on the Y2 axis
-            myPane.YAxis.MajorTic.IsOpposite = true;
-            myPane.YAxis.MinorTic.IsOpposite = true;
-
-            // Don't display the Y zero line
-            myPane.YAxis.MajorGrid.IsVisible = true;
-            myPane.YAxis.MajorGrid.IsZeroLine = true;
-
-            // Align the Y axis labels so they are flush to the axis
-            myPane.YAxis.Scale.Align = AlignP.Inside;
-
-            // Manually set the axis range
-            //myPane.YAxis.Scale.Min = -1;
-            //myPane.YAxis.Scale.Max = 1;
-
-            // Fill the axis background with a gradient
-            //myPane.Chart.Fill = new Fill(Color.White, Color.LightGray, 45.0f);
-
-            // Sample at 50ms intervals
-            //ZedGraphTimer.Interval = 1000;
-            //ZedGraphTimer.Start();
-            //timer1.Enabled = true;
-            //timer1.Start();
-
-
-            // Calculate the Axis Scale Ranges
-            zgc.AxisChange();
-
-            //tickStart = Environment.TickCount;
-        }*/
-
-        /*private void graph_Tick(object sender, EventArgs e)
-        {
-            try
-            {
-                // Make sure that the curvelist has at least one curve
-                if (zg1.GraphPane.CurveList.Count <= 0)
-                    return;
-
-                // Get the first CurveItem in the graph
-                LineItem curve = zg1.GraphPane.CurveList[0] as LineItem;
-                if (curve == null)
-                    return;
-
-                // Get the PointPairList
-                IPointListEdit list = curve.Points as IPointListEdit;
-                // If this is null, it means the reference at curve.Points does not
-                // support IPointListEdit, so we won't be able to modify it
-                if (list == null)
-                    return;
-
-                // Time is measured in seconds
-                //double time = (Environment.TickCount - tickStart) / 1000.0;
-                //double time = list[list.Count - 1].X;
-                
-                // Keep the X scale at a rolling 30 second interval, with one
-                // major step between the max X value and the end of the axis
-                ZedGraph.Scale xScale = zg1.GraphPane.XAxis.Scale;
-                ZedGraph.Scale yScale = zg1.GraphPane.YAxis.Scale;
-                //if (time > xScale.Max - xScale.MajorStep)
-                //{
-                //xScale.Max = time + xScale.MajorStep;
-                //xScale.Min = xScale.Max - 10.0;
-                xScale.Max = MainV2.missionDist;
-                xScale.Min = MainV2.tripOdometer;
-                yScale.Max=100;
-                yScale.Min=0;
-                //}
-
-                // Make sure the Y axis is rescaled to accommodate actual data
-                zg1.AxisChange();
-
-                // Force a redraw
-
-                zg1.Invalidate();
-            }
-            catch (Exception ex) { Console.WriteLine("timer1 exception " + ex.ToString()); }
-
-        }*/
-
         private void battery_Click(object sender, EventArgs e)
         {
-            //writeKML();
-            //double homealt;
-            //double.TryParse(TXT_homealt.Text, out homealt);
-            //Form temp = new BatteryGraph(pointlist, homealt);
-            //ThemeManager.ApplyThemeTo(temp);
-            //temp.ShowDialog();
-
             batteryPlot = new BatteryGraph(pointlist);
-            //dropout.Size = new System.Drawing.Size(hud1.Width, hud1.Height + 20);
-            //SubMainLeft.Panel1.Controls.Remove(hud1);
-            //dropout.Controls.Add(BatteryGraph.zg1);
-            //dropout.Resize += new EventHandler(dropout_Resize);
-            //dropout.FormClosed += new FormClosedEventHandler(dropout_FormClosed);
             batteryPlot.Show();
         }
 
