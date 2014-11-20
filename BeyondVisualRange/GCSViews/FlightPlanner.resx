@@ -1521,7 +1521,7 @@
     <value>0, 359</value>
   </data>
   <data name="panelWaypoints.MinimumSize" type="System.Drawing.Size, System.Drawing">
-    <value>16, 17</value>
+    <value>21, 21</value>
   </data>
   <data name="panelWaypoints.Size" type="System.Drawing.Size, System.Drawing">
     <value>1008, 102</value>
@@ -1578,7 +1578,7 @@
     <value>0, 0</value>
   </data>
   <data name="panelAction.MinimumSize" type="System.Drawing.Size, System.Drawing">
-    <value>16, 17</value>
+    <value>21, 21</value>
   </data>
   <data name="panelAction.Size" type="System.Drawing.Size, System.Drawing">
     <value>123, 359</value>
