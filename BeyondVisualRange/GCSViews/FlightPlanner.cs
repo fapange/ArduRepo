@@ -4338,19 +4338,21 @@ namespace ArdupilotMega.GCSViews
             List<GMapPolygon> sorted = sortHazards(ov.Polygons, s, e);
             PointLatLng ts = s;
 
-            foreach (GMapPolygon m in sorted)
+            //foreach (GMapPolygon m in sorted)
+            while (sorted.Count>0)
             {
-                if (collisionExist(ts, e, m.Points).Item1)
+                if (collisionExist(ts, e, sorted[0].Points).Item1)
                 {
-                    path.AddRange(findPath(ts, e, m.Points));
+                    path.AddRange(findPath(ts, e, sorted[0].Points));
                     if (path.Count > 0)
                     {
                         ts.Lat = path[path.Count - 1].lat;
                         ts.Lng = path[path.Count - 1].lng;
                     }
-                    ov.Polygons.Remove(m);
-                    path = walkHazards(ov.Polygons, ts, e, path);
+                    //path = walkHazards(ov.Polygons, ts, e, path);
                 }
+                ov.Polygons.Remove(sorted[0]);
+                sorted = sortHazards(ov.Polygons, ts, e);
             }
             return path;
         }
