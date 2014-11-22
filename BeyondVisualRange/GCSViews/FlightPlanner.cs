@@ -4145,6 +4145,19 @@ namespace ArdupilotMega.GCSViews
             return (float)(u.Lat * v.Lng - u.Lng * v.Lat);
         }
 
+        private Tuple<bool, double> collisionExist(Locationwp wps, Locationwp wpe, GMap.NET.ObjectModel.ObservableCollectionThreadSafe<GMapPolygon> m)
+        {
+            PointLatLng s = new PointLatLng(wps.lat, wps.lng);
+            PointLatLng e = new PointLatLng(wpe.lat, wpe.lng);
+            Tuple<bool, double> tup = new Tuple<bool, double>(false, 1e20);
+            for (int i = 0; i < m.Count; i++)
+            {
+                tup = collisionExist(s, e, m[i].Points);
+                if (tup.Item1) return tup;
+            }
+            return tup;
+        }
+
         private Tuple<bool, double> collisionExist(PointLatLng s, PointLatLng e, List<PointLatLng> m)
         {
             Tuple<bool, double> tup1 = new Tuple<bool, double>(false, 1e20);
@@ -4197,6 +4210,43 @@ namespace ArdupilotMega.GCSViews
                 lm.Add(m[i]);
 
             return findClearPath(lm,s,e);
+        }
+
+        private List<Locationwp> cleanPath(List<Locationwp> path, GMap.NET.ObjectModel.ObservableCollectionThreadSafe<GMapPolygon> m)
+        {
+            if (path.Count == 0) return path;
+
+            for (int i = 0; i < path.Count - 1; i++)
+            {
+                if (path[i].Equals(path[i + 1]))
+                {
+                    path.RemoveAt(i + 1); --i;
+                }
+            }
+
+            return path;
+            
+            int idx = path.Count-1;
+
+            List<Locationwp> npath = new List<Locationwp>();
+            
+            // abort loc
+            npath.Add(path[0]);
+            
+            // find out if any later points are visible from the abortLoc
+            for (int j=0; j<path.Count-1; j++)
+            {
+                for (int k=path.Count-1; k>j; k--)
+                {
+                    if (!collisionExist(path[j], path[k], m).Item1)
+                    {
+                        npath.Add(path[k]);
+                        j = k-1;
+                        break;
+                    }
+}            }
+
+            return npath;
         }
 
         private List<Locationwp> findClearPath(List<PointLatLng> m, PointLatLng s, PointLatLng e)
@@ -4370,15 +4420,22 @@ namespace ArdupilotMega.GCSViews
                 item.lat = (float)e.Lat;
                 item.lng = (float)e.Lng;
                 path.Add(item);
+                item.lat = (float)MainV2.home.Lat;
+                item.lng = (float)MainV2.home.Lng;
+                path.Add(item);
                 return path;
             }
 
             path = walkHazards(Hazards.Polygons, s, e, path);
+            path = cleanPath(path, Hazards.Polygons);
 
             if (path.Count > 0)
             {
                 item.lat = (float)e.Lat;
                 item.lng = (float)e.Lng;
+                path.Add(item);
+                item.lat = (float)MainV2.home.Lat;
+                item.lng = (float)MainV2.home.Lng;
                 path.Add(item);
                 return path;
             }
@@ -4389,6 +4446,9 @@ namespace ArdupilotMega.GCSViews
                 path.Add(item);
                 item.lat = (float)e.Lat;
                 item.lng = (float)e.Lng;
+                path.Add(item);
+                item.lat = (float)MainV2.home.Lat;
+                item.lng = (float)MainV2.home.Lng;
                 path.Add(item);
                 return path;
             }
@@ -4420,16 +4480,16 @@ namespace ArdupilotMega.GCSViews
                     float delta_d = delta_t * 25.0f;        // meters
                     float rms_soc_consumption = 0.0020f;   // soc % per meter
                     float cons_slope = 0.000002f;
-                    float consumptionRate = 0.65f;
+                    float consumptionRate = 0.70f;
 
                     for (int i = 0; i < factor; i++)
                     {
                         MainV2.tripTimer += delta_t;            // seconds
                         MainV2.tripOdometer += delta_d;   // meters
-                        MainV2.soc1 -= consumptionRate * rms_soc_consumption * delta_d * (float)(1 + cons_slope * MainV2.tripOdometer + 0.0074 * Math.Sin(2 * Math.PI * MainV2.tripOdometer / 4000));
-                        MainV2.soc2 -= consumptionRate * rms_soc_consumption * delta_d * (float)(1 + cons_slope * MainV2.tripOdometer + 0.0075 * Math.Sin(2 * Math.PI * MainV2.tripOdometer / 5000));
-                        MainV2.soc3 -= consumptionRate * rms_soc_consumption * delta_d * (float)(1 + cons_slope * MainV2.tripOdometer + 0.0072 * Math.Sin(2 * Math.PI * MainV2.tripOdometer / 6000));
-                        MainV2.soc4 -= consumptionRate * rms_soc_consumption * delta_d * (float)(1 + cons_slope * MainV2.tripOdometer + 0.0073 * Math.Sin(2 * Math.PI * MainV2.tripOdometer / 7000));
+                        MainV2.soc1 -= consumptionRate * rms_soc_consumption * delta_d * (float)(1 + cons_slope * MainV2.tripOdometer + 0.0024 * Math.Sin(2 * Math.PI * MainV2.tripOdometer / 4000));
+                        MainV2.soc2 -= consumptionRate * rms_soc_consumption * delta_d * (float)(1 + cons_slope * MainV2.tripOdometer + 0.0025 * Math.Sin(2 * Math.PI * MainV2.tripOdometer / 5000));
+                        MainV2.soc3 -= consumptionRate * rms_soc_consumption * delta_d * (float)(1 + cons_slope * MainV2.tripOdometer + 0.0022 * Math.Sin(2 * Math.PI * MainV2.tripOdometer / 6000));
+                        MainV2.soc4 -= consumptionRate * rms_soc_consumption * delta_d * (float)(1 + cons_slope * MainV2.tripOdometer + 0.0023 * Math.Sin(2 * Math.PI * MainV2.tripOdometer / 7000));
                     }
 
                     if (MainV2.tripOdometer > MainV2.missionDist)
@@ -4532,22 +4592,22 @@ namespace ArdupilotMega.GCSViews
                             MainV2.maxTimeLeft = Math.Min(MainV2.eodTime, MainV2.etaTime);
                             MainV2.maxLoc = OdometerToLatLng(Math.Min(odometer + MainV2.maxDistLeft, MainV2.missionDist));
 
-                            for (float d = MainV2.maxDistLeft; d >= 0; d -= 1.0f)
-                            {
-                                MainV2.abortDist = Math.Min(odometer + d, MainV2.missionDist);
-                                MainV2.abortTime = MainV2.abortDist / (60.0f * MainV2.avgSpeed[4]);
-                                MainV2.abortLoc = OdometerToLatLng(MainV2.abortDist);
-                                haz_sug = checkHazards(MainV2.abortLoc, firstPoint);
-                                float haz_dist = (float)pathLength(haz_sug);
-                                MainV2.abortHomeDist = 1000.0f * (haz_dist + firstDist);
-                                MainV2.abortHomeTime = MainV2.abortHomeDist / (60.0f * MainV2.avgSpeed[4]);
-                                float hd = d + MainV2.abortHomeDist;
-                                if (hd <= MainV2.maxDistLeft) break;
-                            }
-
-                            haz_sug = checkHazards(MainV2.abortLoc, firstPoint);
-                            if (MainV2.etaTime >= MainV2.eodTime)
+                            if ((MainV2.etaTime >= MainV2.eodTime) && (myStatus != missionStatus.Warning))
                             { // suggested plan in case it needs to be aborted
+                                for (float d = MainV2.maxDistLeft; d >= 0; d -= 1000.0f)
+                                {
+                                    MainV2.abortDist = Math.Min(odometer + d, MainV2.missionDist);
+                                    MainV2.abortTime = MainV2.abortDist / (60.0f * MainV2.avgSpeed[4]);
+                                    MainV2.abortLoc = OdometerToLatLng(MainV2.abortDist);
+                                    haz_sug = checkHazards(MainV2.abortLoc, firstPoint);
+                                    float haz_dist = (float)pathLength(haz_sug);
+                                    MainV2.abortHomeDist = 1000.0f * (haz_dist + firstDist);
+                                    MainV2.abortHomeTime = MainV2.abortHomeDist / (60.0f * MainV2.avgSpeed[4]);
+                                    float hd = d + MainV2.abortHomeDist;
+                                    if (hd <= MainV2.maxDistLeft) break;
+                                }
+
+                                haz_sug = checkHazards(MainV2.abortLoc, firstPoint);
 
                                 if (myStatus == missionStatus.Normal)
                                     myStatus = missionStatus.InsufficientCharge;
