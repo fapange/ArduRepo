@@ -273,11 +273,13 @@ namespace ArdupilotMega.GCSViews
                 TXT_loiterrad.Text = (loit_rad).ToString();
 
                 processToScreen(cmds);
-
-                writeKML();
-
                 MainMap.ZoomAndCenterMarkers("objects");
-                MainMap.Zoom = 16;
+                MainMap_OnMapZoomChanged();
+
+                //writeKML();
+
+                //MainMap.ZoomAndCenterMarkers("objects");
+                //MainMap.Zoom = 16;
             }
             catch (Exception ex)
             {
@@ -1617,13 +1619,15 @@ namespace ArdupilotMega.GCSViews
                         try
                         {
                             processToScreen(cmds);
+                            MainMap.ZoomAndCenterMarkers("objects");
+                            MainMap_OnMapZoomChanged();
                         }
                         catch (Exception exx) { log.Info(exx.ToString()); }
                     }
 
                     MainV2.givecomport = false;
 
-                    writeKML();
+                    //writeKML();
 
                 });
             }
@@ -1992,38 +1996,46 @@ namespace ArdupilotMega.GCSViews
 
                 log.Info("Setting wp params");
 
-                string hold_alt = ((int)((float)param["ALT_HOLD_RTL"] * MainV2.cs.multiplierdist)).ToString();
-
-                log.Info("param ALT_HOLD_RTL " + hold_alt);
-
-                if (!hold_alt.Equals("-1"))
-                {
-                    TXT_DefaultAlt.Text = hold_alt;
-                }
-
-                TXT_WPRad.Text = ((int)((float)param["WP_RADIUS"] * MainV2.cs.multiplierdist)).ToString();
-
-                log.Info("param WP_RADIUS " + TXT_WPRad.Text);
-
                 try
                 {
+                    if (param["ALT_HOLD_RTL"] != null)
+                    {
+                        string hold_alt = ((int)((float)param["ALT_HOLD_RTL"] * MainV2.cs.multiplierdist)).ToString();
+
+                        log.Info("param ALT_HOLD_RTL " + hold_alt);
+
+                        if (!hold_alt.Equals("-1"))
+                        {
+                            TXT_DefaultAlt.Text = hold_alt;
+                        }
+                        CHK_holdalt.Checked = Convert.ToBoolean(float.Parse(TXT_DefaultAlt.Text.ToString()) > 0);
+                        log.Info("param ALT_HOLD_RTL " + CHK_holdalt.Checked.ToString());
+                    }
+
+                    if (param["WP_RADIUS"] != null)
+                        TXT_WPRad.Text = ((int)((float)param["WP_RADIUS"] * MainV2.cs.multiplierdist)).ToString();
+                    
                     if (param["LOITER_RADIUS"] != null)
                         TXT_loiterrad.Text = ((int)((float)param["LOITER_RADIUS"] * MainV2.cs.multiplierdist)).ToString();
 
                     if (param["WP_LOITER_RAD"] != null)
                         TXT_loiterrad.Text = ((int)((float)param["WP_LOITER_RAD"] * MainV2.cs.multiplierdist)).ToString();
 
+                    log.Info("param ALT_HOLD_RTL " + TXT_DefaultAlt.Text);
+                    log.Info("param WP_RADIUS " + TXT_WPRad.Text);
                     log.Info("param LOITER_RADIUS " + TXT_loiterrad.Text);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    
+                    MessageBox.Show(ex.ToString());
                 }
-                CHK_holdalt.Checked = Convert.ToBoolean((float)param["ALT_HOLD_RTL"] > 0);
-                log.Info("param ALT_HOLD_RTL " + CHK_holdalt.Checked.ToString());
 
             }
-            catch (Exception ex) { log.Info(ex.ToString()); } // if there is no valid home
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+                log.Info(ex.ToString());
+            } // if there is no valid home
 
             if (Commands.RowCount > 0)
             {
@@ -2034,10 +2046,6 @@ namespace ArdupilotMega.GCSViews
             quickadd = false;
 
             writeKML();
-
-            MainMap.ZoomAndCenterMarkers("objects");
-
-            MainMap_OnMapZoomChanged();
 
             PointLatLng p1;
             PointLatLng p2;
@@ -2354,10 +2362,12 @@ namespace ArdupilotMega.GCSViews
                 sr.Close();
 
                 processToScreen(cmds);
-
-                writeKML();
-
                 MainMap.ZoomAndCenterMarkers("objects");
+                MainMap_OnMapZoomChanged();
+
+                //writeKML();
+
+                //MainMap.ZoomAndCenterMarkers("objects");
             }
             catch (Exception ex)
             {
@@ -4244,7 +4254,8 @@ namespace ArdupilotMega.GCSViews
                         j = k-1;
                         break;
                     }
-}            }
+                }
+            }
 
             return npath;
         }
@@ -4478,7 +4489,7 @@ namespace ArdupilotMega.GCSViews
                     int factor = 10;
                     float delta_t = ((float)timer1.Interval/1000.0f); // sec
                     float delta_d = delta_t * 25.0f;        // meters
-                    float rms_soc_consumption = 0.0020f;   // soc % per meter
+                    float rms_soc_consumption = 0.0022f;   // soc % per meter
                     float cons_slope = 0.000002f;
                     float consumptionRate = 0.70f;
 
@@ -4545,27 +4556,35 @@ namespace ArdupilotMega.GCSViews
                             MainV2.instSpeed.RemoveAt(0); MainV2.instSpeed.Add((MainV2.distTable[4] - MainV2.distTable[3]) / (MainV2.timeTable[4] - MainV2.timeTable[3]));
                             MainV2.avgSpeed.RemoveAt(0); MainV2.avgSpeed.Add(MainV2.tripOdometer / MainV2.tripTimer);
                             //MainV2.trndSpeed;
+                            
                             MainV2.instCons1_t.RemoveAt(0); MainV2.instCons1_t.Add((MainV2.soc1Table[3] - MainV2.soc1Table[4]) / (MainV2.timeTable[4] - MainV2.timeTable[3]));
                             MainV2.avgCons1_t.RemoveAt(0); MainV2.avgCons1_t.Add((100 - MainV2.soc1) / MainV2.tripTimer);
                             //, MainV2.trndCons1_t;
+                            
                             MainV2.instCons2_t.RemoveAt(0); MainV2.instCons2_t.Add((MainV2.soc2Table[3] - MainV2.soc2Table[4]) / (MainV2.timeTable[4] - MainV2.timeTable[3]));
                             MainV2.avgCons2_t.RemoveAt(0); MainV2.avgCons2_t.Add((100 - MainV2.soc2) / MainV2.tripTimer);
                             //MainV2.trndCons2_t;
+                            
                             MainV2.instCons3_t.RemoveAt(0); MainV2.instCons3_t.Add((MainV2.soc3Table[3] - MainV2.soc3Table[4]) / (MainV2.timeTable[4] - MainV2.timeTable[3]));
                             MainV2.avgCons3_t.RemoveAt(0); MainV2.avgCons3_t.Add((100 - MainV2.soc3) / MainV2.tripTimer);
                             //MainV2.trndCons3_t;
+                            
                             MainV2.instCons4_t.RemoveAt(0); MainV2.instCons4_t.Add((MainV2.soc4Table[3] - MainV2.soc4Table[4]) / (MainV2.timeTable[4] - MainV2.timeTable[3]));
                             MainV2.avgCons4_t.RemoveAt(0); MainV2.avgCons4_t.Add((100 - MainV2.soc4) / MainV2.tripTimer);
                             //MainV2.trndCons4_t;
+                            
                             MainV2.instCons1_d.RemoveAt(0); MainV2.instCons1_d.Add((MainV2.soc1Table[3] - MainV2.soc1Table[4]) / ((MainV2.distTable[4] - MainV2.distTable[3])/1000));
                             MainV2.avgCons1_d.RemoveAt(0); MainV2.avgCons1_d.Add((100 - MainV2.soc1) / MainV2.tripOdometer);
                             //MainV2.trndCons1_d;
+                            
                             MainV2.instCons2_d.RemoveAt(0); MainV2.instCons2_d.Add((MainV2.soc2Table[3] - MainV2.soc2Table[4]) / ((MainV2.distTable[4] - MainV2.distTable[3])/1000));
                             MainV2.avgCons2_d.RemoveAt(0); MainV2.avgCons2_d.Add((100 - MainV2.soc2) / MainV2.tripOdometer);
                             //MainV2.trndCons2_d;
+                            
                             MainV2.instCons3_d.RemoveAt(0); MainV2.instCons3_d.Add((MainV2.soc3Table[3] - MainV2.soc3Table[4]) / ((MainV2.distTable[4] - MainV2.distTable[3])/1000));
                             MainV2.avgCons3_d.RemoveAt(0); MainV2.avgCons3_d.Add((100 - MainV2.soc3) / MainV2.tripOdometer);
                             //MainV2.trndCons3_d;
+                            
                             MainV2.instCons4_d.RemoveAt(0); MainV2.instCons4_d.Add((MainV2.soc4Table[3] - MainV2.soc4Table[4]) / ((MainV2.distTable[4] - MainV2.distTable[3])/1000));
                             MainV2.avgCons4_d.RemoveAt(0); MainV2.avgCons4_d.Add((100 - MainV2.soc4) / MainV2.tripOdometer);
                             //MainV2.trndCons4_d;
@@ -4594,7 +4613,7 @@ namespace ArdupilotMega.GCSViews
 
                             if ((MainV2.etaTime >= MainV2.eodTime) && (myStatus != missionStatus.Warning))
                             { // suggested plan in case it needs to be aborted
-                                for (float d = MainV2.maxDistLeft; d >= 0; d -= 1000.0f)
+                                for (float d = MainV2.maxDistLeft; d >= 0; d -= 100.0f)
                                 {
                                     MainV2.abortDist = Math.Min(odometer + d, MainV2.missionDist);
                                     MainV2.abortTime = MainV2.abortDist / (60.0f * MainV2.avgSpeed[4]);
@@ -4607,7 +4626,7 @@ namespace ArdupilotMega.GCSViews
                                     if (hd <= MainV2.maxDistLeft) break;
                                 }
 
-                                haz_sug = checkHazards(MainV2.abortLoc, firstPoint);
+                                //haz_sug = checkHazards(MainV2.abortLoc, firstPoint);
 
                                 if (myStatus == missionStatus.Normal)
                                     myStatus = missionStatus.InsufficientCharge;
@@ -4624,14 +4643,85 @@ namespace ArdupilotMega.GCSViews
                                 cmds = cmds_sug; //.AddRange(cmds_sug);
 
                                 processToScreen(cmds);
-                                writeKML();
-                                MainMap.ZoomAndCenterMarkers("objects");
+                                //writeKML();
+                                //MainMap.ZoomAndCenterMarkers("objects");
                                 if (batteryPlot != null)
                                 {
                                     batteryPlot.updatePoints(pointlist);
                                 }
                             }
                         }
+
+                        //routes.Markers.Clear();
+                        updateClearRoutes();
+                        route = new GMapRoute(trackPoints, "track");
+                        routes.Routes.Add(route);
+
+                        updateClearSugPolygons();
+
+                        List<PointLatLng> sugPoints = new List<PointLatLng>();
+
+                        if (cmds_sug != null)
+                        {
+                            foreach (Locationwp m in cmds_sug)
+                            {
+                                sugPoints.Add(new PointLatLng(m.lat, m.lng));
+                            }
+                            if (sugPoints.Count > 0)
+                            {
+                                if (sug_polygon == null)
+                                {
+                                    sug_polygon = new GMapPolygon(sugPoints, "suggested");
+                                    sug_polygons.Polygons.Add(polygon);
+                                }
+                                else
+                                {
+                                    sug_polygon.Points.Clear();
+                                    sug_polygon.Points.AddRange(sugPoints);
+
+                                    //sug_polygon.Stroke = new Pen(Color.DarkGoldenrod, 10);
+                                    sug_polygon.Stroke = new Pen(Color.FromArgb(255, Color.Green), 5);
+                                    sug_polygon.Stroke.DashStyle = DashStyle.Dash;
+
+                                    if (sug_polygons.Polygons.Count == 0)
+                                    {
+                                        sug_polygons.Polygons.Add(sug_polygon);
+                                    }
+                                    else
+                                    {
+                                        lock (thisLock)
+                                        {
+                                            MainMap.UpdatePolygonLocalPosition(sug_polygon);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    
+                        if (myStatus != missionStatus.Normal)
+                        {
+                            GMapMarkerGoogleRed abortM = new GMapMarkerGoogleRed(MainV2.abortLoc);
+                            abortM.ToolTipText = "Abort";
+                            abortM.ToolTipMode = MarkerTooltipMode.Always;
+                            sug_polygons.Markers.Add(abortM);
+
+                            GMapMarkerGoogleRed endM = new GMapMarkerGoogleRed(MainV2.maxLoc);
+                            endM.ToolTipText = "EOD";
+                            endM.ToolTipMode = MarkerTooltipMode.Always;
+                            sug_polygons.Markers.Add(endM);
+                        }
+
+                        if (MainV2.cs.firmware == MainV2.Firmwares.ArduPlane)
+                        {
+                            //routes.Markers.Add(new GMapMarkerPlane(currentloc, MainV2.cs.yaw, MainV2.cs.groundcourse, MainV2.cs.nav_bearing, MainV2.cs.target_bearing, MainMap) { ToolTipText = (MainV2.tripOdometer / 1000.0f).ToString("0.0 Km") + Environment.NewLine + (MainV2.tripTimer / 60.0).ToString("0.0 min"), ToolTipMode = MarkerTooltipMode.Always });
+                            top.Markers.Clear();
+                            top.Markers.Add(new GMapMarkerPlane(currentloc, MainV2.cs.yaw, MainV2.cs.groundcourse, MainV2.cs.nav_bearing, MainV2.cs.target_bearing, MainMap) { ToolTipText = (MainV2.tripOdometer / 1000.0f).ToString("0.0 Km") + Environment.NewLine + ((int)(MainV2.tripTimer / 60)).ToString("00:") + ((int)(((MainV2.tripTimer / 60.0) - (int)(MainV2.tripTimer / 60.0)) * 60)).ToString("00"), ToolTipMode = MarkerTooltipMode.Always });
+                        }
+                        else
+                        {
+                            routes.Markers.Add(new GMapMarkerQuad(currentloc, MainV2.cs.yaw, MainV2.cs.groundcourse, MainV2.cs.nav_bearing));
+                        }
+
                     }
 
                     if (gcount == 0)
@@ -4658,80 +4748,9 @@ namespace ArdupilotMega.GCSViews
                             socp_list4.Add(MainV2.tripOdometer / 1000 + (float)i * d_delta, MainV2.soc4 - (float)i * d_delta * MainV2.instCons4_d[4]);
                         }
                     }
-
-                    //routes.Markers.Clear();
-                    updateClearRoutes();
-                    route = new GMapRoute(trackPoints, "track");
-                    routes.Routes.Add(route);
-
-                    updateClearSugPolygons();
-
-                    List<PointLatLng> sugPoints = new List<PointLatLng>();
-
-                    if (cmds_sug != null)
-                    {
-                        foreach (Locationwp m in cmds_sug)
-                        {
-                            sugPoints.Add(new PointLatLng(m.lat, m.lng));
-                        }
-                        if (sugPoints.Count > 0)
-                        {
-                            if (sug_polygon == null)
-                            {
-                                sug_polygon = new GMapPolygon(sugPoints, "suggested");
-                                sug_polygons.Polygons.Add(polygon);
-                            }
-                            else
-                            {
-                                sug_polygon.Points.Clear();
-                                sug_polygon.Points.AddRange(sugPoints);
-
-                                //sug_polygon.Stroke = new Pen(Color.DarkGoldenrod, 10);
-                                sug_polygon.Stroke = new Pen(Color.FromArgb(255, Color.Green), 5);
-                                sug_polygon.Stroke.DashStyle = DashStyle.Dash;
-
-                                if (sug_polygons.Polygons.Count == 0)
-                                {
-                                    sug_polygons.Polygons.Add(sug_polygon);
-                                }
-                                else
-                                {
-                                    lock (thisLock)
-                                    {
-                                        MainMap.UpdatePolygonLocalPosition(sug_polygon);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    
-                    if (myStatus != missionStatus.Normal)
-                    {
-                        GMapMarkerGoogleRed abortM = new GMapMarkerGoogleRed(MainV2.abortLoc);
-                        abortM.ToolTipText = "Abort";
-                        abortM.ToolTipMode = MarkerTooltipMode.Always;
-                        sug_polygons.Markers.Add(abortM);
-
-                        GMapMarkerGoogleRed endM = new GMapMarkerGoogleRed(MainV2.maxLoc);
-                        endM.ToolTipText = "EOD";
-                        endM.ToolTipMode = MarkerTooltipMode.Always;
-                        sug_polygons.Markers.Add(endM);
-                    }
-
-                    if (MainV2.cs.firmware == MainV2.Firmwares.ArduPlane)
-                    {
-                        //routes.Markers.Add(new GMapMarkerPlane(currentloc, MainV2.cs.yaw, MainV2.cs.groundcourse, MainV2.cs.nav_bearing, MainV2.cs.target_bearing, MainMap) { ToolTipText = (MainV2.tripOdometer / 1000.0f).ToString("0.0 Km") + Environment.NewLine + (MainV2.tripTimer / 60.0).ToString("0.0 min"), ToolTipMode = MarkerTooltipMode.Always });
-                        top.Markers.Clear();
-                        top.Markers.Add(new GMapMarkerPlane(currentloc, MainV2.cs.yaw, MainV2.cs.groundcourse, MainV2.cs.nav_bearing, MainV2.cs.target_bearing, MainMap) { ToolTipText = (MainV2.tripOdometer / 1000.0f).ToString("0.0 Km") + Environment.NewLine + ((int)(MainV2.tripTimer / 60)).ToString("00:") + ((int)(((MainV2.tripTimer / 60.0) - (int)(MainV2.tripTimer / 60.0)) * 60)).ToString("00"), ToolTipMode = MarkerTooltipMode.Always });
-                    }
-                    else
-                    {
-                        routes.Markers.Add(new GMapMarkerQuad(currentloc, MainV2.cs.yaw, MainV2.cs.groundcourse, MainV2.cs.nav_bearing));
-                    }
-
                     count = ++count % 10;
                     gcount = ++gcount % 10;
-                    pcount = ++pcount % 10;
+                    pcount = ++pcount % 20;
 #if UDP_DATA
                 }
 #endif
