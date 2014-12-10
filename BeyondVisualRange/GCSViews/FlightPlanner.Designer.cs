@@ -133,6 +133,7 @@
             this.panelBASE = new System.Windows.Forms.Panel();
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.Decision = new System.Windows.Forms.Timer(this.components);
             ((System.ComponentModel.ISupportInitialize)(this.Commands)).BeginInit();
             this.panel5.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -927,6 +928,12 @@
             this.timer1.Enabled = true;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
+            // Decision
+            // 
+            this.Decision.Enabled = true;
+            this.Decision.Interval = 1000;
+            this.Decision.Tick += new System.EventHandler(this.Decision_Tick);
+            // 
             // FlightPlanner
             // 
             resources.ApplyResources(this, "$this");
@@ -1054,5 +1061,6 @@
         //private ZedGraph.ZedGraphControl zg1;
         private MyButton batteryButton;
         private System.Windows.Forms.CheckBox checkFollow;
+        private System.Windows.Forms.Timer Decision;
     }
 }

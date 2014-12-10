@@ -106,17 +106,17 @@ namespace ArdupilotMega.HIL
         private static readonly ILog log = LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
         QuadCopter self;
 
-        int framecount = 0;
+        //int framecount = 0;
         DateTime seconds = DateTime.Now;
 
         double[] motor_speed = null;
 
         double hover_throttle;
-        double terminal_velocity;
-        double terminal_rotation_rate;
+        //double terminal_velocity;
+        //double terminal_rotation_rate;
         Motor[] motors;
 
-        Vector3d old_position;
+        //Vector3d old_position;
 
 
         //# scaling from total motor power to Newtons. Allows the copter
@@ -135,8 +135,8 @@ namespace ArdupilotMega.HIL
             frame_height = 0.1;
             motor_speed = new double[motors.Length];
             hover_throttle = 0.37;
-            terminal_velocity = 30.0;
-            terminal_rotation_rate = 4 * 360.0;
+            //terminal_velocity = 30.0;
+            //terminal_rotation_rate = 4 * 360.0;
 
             thrust_scale = (mass * gravity) / (motors.Length * hover_throttle);
 

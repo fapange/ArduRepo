@@ -114,6 +114,8 @@ namespace ArdupilotMega.GCSViews
         GMapPolygon hz;
 
         Byte[] buffer = new Byte[1024];
+        PointLatLng firstPoint;
+        float firstDist;
 
         public static List<PointLatLngAlt> cpointlist = new List<PointLatLngAlt>(); 
         public static List<PointLatLngAlt> pointlist = new List<PointLatLngAlt>(); // used to calc distance
@@ -4463,15 +4465,61 @@ namespace ArdupilotMega.GCSViews
                 path.Add(item);
                 return path;
             }
-        }  
+        }
+
+        private void Decision_Tick(object sender, EventArgs e)
+        {
+            if (MainV2.timeTable[3] > 0)
+            {
+                if ((MainV2.etaTime >= MainV2.eodTime) && (myStatus != missionStatus.Warning))
+                { // suggested plan in case it needs to be aborted
+                    for (float d = MainV2.maxDistLeft; d >= 0; d -= 100.0f)
+                    {
+                        MainV2.abortDist = Math.Min(odometer + d, MainV2.missionDist);
+                        MainV2.abortTime = MainV2.abortDist / (60.0f * MainV2.avgSpeed[4]);
+                        MainV2.abortLoc = OdometerToLatLng(MainV2.abortDist);
+                        haz_sug = checkHazards(MainV2.abortLoc, firstPoint);
+                        float haz_dist = (float)pathLength(haz_sug);
+                        MainV2.abortHomeDist = 1000.0f * (haz_dist + firstDist);
+                        MainV2.abortHomeTime = MainV2.abortHomeDist / (60.0f * MainV2.avgSpeed[4]);
+                        float hd = d + MainV2.abortHomeDist;
+                        if (hd <= MainV2.maxDistLeft) break;
+                    }
+
+                    //haz_sug = checkHazards(MainV2.abortLoc, firstPoint);
+
+                    if (myStatus == missionStatus.Normal)
+                        myStatus = missionStatus.InsufficientCharge;
+
+                    int idx = getCurrentLegNo(MainV2.abortDist);
+                    cmds_sug = cmds.GetRange(0, idx);
+                    cmds_sug.AddRange(haz_sug);
+                }
+
+                if ((MainV2.eodTime <= MainV2.abortHomeTime) && (myStatus != missionStatus.Warning))
+                {
+                    myStatus = missionStatus.Warning;
+                    cmds.Clear();
+                    cmds = cmds_sug; //.AddRange(cmds_sug);
+
+                    processToScreen(cmds);
+                    //writeKML();
+                    //MainMap.ZoomAndCenterMarkers("objects");
+                    if (batteryPlot != null)
+                    {
+                        batteryPlot.updatePoints(pointlist);
+                    }
+                }
+            }
+        }
 
         private void timer1_Tick(object sender, EventArgs e)
         {
             PointLatLng currentloc = new PointLatLng(0, 0);
             MainV2.fpw = panelAction.Width;
             int p1idx = missionPoints.Count > 1 ? 1 : 0;
-            PointLatLng firstPoint = new PointLatLng(missionPoints[p1idx].Lat, missionPoints[p1idx].Lng);
-            float firstDist = (float)MainMap.Manager.GetDistance(firstPoint, MainV2.home);
+            firstPoint = new PointLatLng(missionPoints[p1idx].Lat, missionPoints[p1idx].Lng);
+            firstDist = (float)MainMap.Manager.GetDistance(firstPoint, MainV2.home);
             try
             {
 #if UDP_DATA
@@ -4518,7 +4566,7 @@ namespace ArdupilotMega.GCSViews
                         }
                     }
 #endif
-                    if (MainV2.tripOdometer == 0.0f)
+                    if (MainV2.tripOdometer == 0)
                     {
                         soc_list1.Clear();
                         soc_list2.Clear();
@@ -4611,45 +4659,6 @@ namespace ArdupilotMega.GCSViews
                             MainV2.maxTimeLeft = Math.Min(MainV2.eodTime, MainV2.etaTime);
                             MainV2.maxLoc = OdometerToLatLng(Math.Min(odometer + MainV2.maxDistLeft, MainV2.missionDist));
 
-                            if ((MainV2.etaTime >= MainV2.eodTime) && (myStatus != missionStatus.Warning))
-                            { // suggested plan in case it needs to be aborted
-                                for (float d = MainV2.maxDistLeft; d >= 0; d -= 100.0f)
-                                {
-                                    MainV2.abortDist = Math.Min(odometer + d, MainV2.missionDist);
-                                    MainV2.abortTime = MainV2.abortDist / (60.0f * MainV2.avgSpeed[4]);
-                                    MainV2.abortLoc = OdometerToLatLng(MainV2.abortDist);
-                                    haz_sug = checkHazards(MainV2.abortLoc, firstPoint);
-                                    float haz_dist = (float)pathLength(haz_sug);
-                                    MainV2.abortHomeDist = 1000.0f * (haz_dist + firstDist);
-                                    MainV2.abortHomeTime = MainV2.abortHomeDist / (60.0f * MainV2.avgSpeed[4]);
-                                    float hd = d + MainV2.abortHomeDist;
-                                    if (hd <= MainV2.maxDistLeft) break;
-                                }
-
-                                //haz_sug = checkHazards(MainV2.abortLoc, firstPoint);
-
-                                if (myStatus == missionStatus.Normal)
-                                    myStatus = missionStatus.InsufficientCharge;
-
-                                int idx = getCurrentLegNo(MainV2.abortDist);
-                                cmds_sug = cmds.GetRange(0, idx);
-                                cmds_sug.AddRange(haz_sug);
-                            }
-
-                            if ((MainV2.eodTime <= MainV2.abortHomeTime) && (myStatus != missionStatus.Warning))
-                            {
-                                myStatus = missionStatus.Warning;
-                                cmds.Clear();
-                                cmds = cmds_sug; //.AddRange(cmds_sug);
-
-                                processToScreen(cmds);
-                                //writeKML();
-                                //MainMap.ZoomAndCenterMarkers("objects");
-                                if (batteryPlot != null)
-                                {
-                                    batteryPlot.updatePoints(pointlist);
-                                }
-                            }
                         }
 
                         //routes.Markers.Clear();
