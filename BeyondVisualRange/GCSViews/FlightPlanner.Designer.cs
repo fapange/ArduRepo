@@ -134,6 +134,7 @@
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.Decision = new System.Windows.Forms.Timer(this.components);
+            this.RMS_soc = new System.Windows.Forms.NumericUpDown();
             ((System.ComponentModel.ISupportInitialize)(this.Commands)).BeginInit();
             this.panel5.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -144,6 +145,7 @@
             this.contextMenuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
             this.panelBASE.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.RMS_soc)).BeginInit();
             this.SuspendLayout();
             // 
             // CHK_altmode
@@ -634,6 +636,7 @@
             this.panelAction.CaptionFont = new System.Drawing.Font("Segoe UI", 11.75F, System.Drawing.FontStyle.Bold);
             this.panelAction.CaptionHeight = 21;
             this.panelAction.ColorScheme = BSE.Windows.Forms.ColorScheme.Custom;
+            this.panelAction.Controls.Add(this.RMS_soc);
             this.panelAction.Controls.Add(this.textBox1);
             this.panelAction.Controls.Add(this.myButton1);
             this.panelAction.Controls.Add(this.panel5);
@@ -934,6 +937,23 @@
             this.Decision.Interval = 1000;
             this.Decision.Tick += new System.EventHandler(this.Decision_Tick);
             // 
+            // RMS_soc
+            // 
+            this.RMS_soc.DecimalPlaces = 2;
+            this.RMS_soc.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            131072});
+            resources.ApplyResources(this.RMS_soc, "RMS_soc");
+            this.RMS_soc.Name = "RMS_soc";
+            this.RMS_soc.Tag = "RMS soc";
+            this.RMS_soc.Value = new decimal(new int[] {
+            22,
+            0,
+            0,
+            65536});
+            // 
             // FlightPlanner
             // 
             resources.ApplyResources(this, "$this");
@@ -959,6 +979,7 @@
             this.contextMenuStrip1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).EndInit();
             this.panelBASE.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.RMS_soc)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -1062,5 +1083,6 @@
         private MyButton batteryButton;
         private System.Windows.Forms.CheckBox checkFollow;
         private System.Windows.Forms.Timer Decision;
+        private System.Windows.Forms.NumericUpDown RMS_soc;
     }
 }
