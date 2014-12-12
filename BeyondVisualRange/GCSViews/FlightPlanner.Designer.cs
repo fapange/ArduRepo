@@ -98,6 +98,7 @@
             this.BUT_Add = new ArdupilotMega.MyButton();
             this.checkFollow = new System.Windows.Forms.CheckBox();
             this.panelAction = new BSE.Windows.Forms.Panel();
+            this.RMS_soc = new System.Windows.Forms.NumericUpDown();
             this.myButton1 = new ArdupilotMega.MyButton();
             this.panelMap = new System.Windows.Forms.Panel();
             this.lbl_distance = new System.Windows.Forms.Label();
@@ -134,18 +135,17 @@
             this.toolTip1 = new System.Windows.Forms.ToolTip(this.components);
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.Decision = new System.Windows.Forms.Timer(this.components);
-            this.RMS_soc = new System.Windows.Forms.NumericUpDown();
             ((System.ComponentModel.ISupportInitialize)(this.Commands)).BeginInit();
             this.panel5.SuspendLayout();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
             this.panelWaypoints.SuspendLayout();
             this.panelAction.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.RMS_soc)).BeginInit();
             this.panelMap.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
             this.panelBASE.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.RMS_soc)).BeginInit();
             this.SuspendLayout();
             // 
             // CHK_altmode
@@ -667,6 +667,23 @@
             this.panelAction.ToolTipTextExpandIconPanelExpanded = null;
             this.panelAction.PanelCollapsing += new System.EventHandler<BSE.Windows.Forms.XPanderStateChangeEventArgs>(this.panel4_PanelCollapsing);
             // 
+            // RMS_soc
+            // 
+            this.RMS_soc.DecimalPlaces = 2;
+            this.RMS_soc.Increment = new decimal(new int[] {
+            1,
+            0,
+            0,
+            131072});
+            resources.ApplyResources(this.RMS_soc, "RMS_soc");
+            this.RMS_soc.Name = "RMS_soc";
+            this.RMS_soc.Tag = "RMS soc";
+            this.RMS_soc.Value = new decimal(new int[] {
+            22,
+            0,
+            0,
+            65536});
+            // 
             // myButton1
             // 
             resources.ApplyResources(this.myButton1, "myButton1");
@@ -937,23 +954,6 @@
             this.Decision.Interval = 1000;
             this.Decision.Tick += new System.EventHandler(this.Decision_Tick);
             // 
-            // RMS_soc
-            // 
-            this.RMS_soc.DecimalPlaces = 2;
-            this.RMS_soc.Increment = new decimal(new int[] {
-            1,
-            0,
-            0,
-            131072});
-            resources.ApplyResources(this.RMS_soc, "RMS_soc");
-            this.RMS_soc.Name = "RMS_soc";
-            this.RMS_soc.Tag = "RMS soc";
-            this.RMS_soc.Value = new decimal(new int[] {
-            22,
-            0,
-            0,
-            65536});
-            // 
             // FlightPlanner
             // 
             resources.ApplyResources(this, "$this");
@@ -974,12 +974,12 @@
             this.panelWaypoints.PerformLayout();
             this.panelAction.ResumeLayout(false);
             this.panelAction.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.RMS_soc)).EndInit();
             this.panelMap.ResumeLayout(false);
             this.panelMap.PerformLayout();
             this.contextMenuStrip1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).EndInit();
             this.panelBASE.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.RMS_soc)).EndInit();
             this.ResumeLayout(false);
 
         }

@@ -4472,7 +4472,7 @@ namespace ArdupilotMega.GCSViews
         {
             if (MainV2.avgSpeed[4] > 0)
             {
-                if ((MainV2.etaTime < MainV2.eodTime) && (myStatus != missionStatus.Normal))
+                if ((MainV2.etaTime < MainV2.eodTime) && (myStatus != missionStatus.Normal) && (myStatus != missionStatus.Warning))
                 { // suggested plan in case it needs to be aborted
                     myStatus = missionStatus.Normal;
                     cmds_sug.Clear();
@@ -4483,16 +4483,16 @@ namespace ArdupilotMega.GCSViews
                     if (myStatus == missionStatus.Normal)
                         myStatus = missionStatus.InsufficientCharge;
 
-                    for (float d = MainV2.maxDistLeft; d >= 0; d -= 10.0f)
+                    float traveledDist = odometer - 200;
+                    for (MainV2.abortDist = MainV2.missionDist; MainV2.abortDist >= traveledDist; MainV2.abortDist -= 10.0f)
                     {
-                        MainV2.abortDist = Math.Min(odometer + d, MainV2.missionDist);
                         MainV2.abortTime = MainV2.abortDist / (60.0f * MainV2.avgSpeed[4]);
                         MainV2.abortLoc = OdometerToLatLng(MainV2.abortDist);
                         haz_sug = checkHazards(MainV2.abortLoc, firstPoint);
                         float haz_dist = (float)pathLength(haz_sug);
                         MainV2.abortHomeDist = 1000.0f * (haz_dist + firstDist);
                         MainV2.abortHomeTime = MainV2.abortHomeDist / (60.0f * MainV2.avgSpeed[4]);
-                        float hd = d + MainV2.abortHomeDist;
+                        float hd = MainV2.abortHomeDist + (MainV2.abortDist - traveledDist);
                         if (hd <= MainV2.maxDistLeft) break;
                     }
 
@@ -4501,19 +4501,6 @@ namespace ArdupilotMega.GCSViews
                     int idx = getCurrentLegNo(MainV2.abortDist);
                     cmds_sug = cmds.GetRange(0, idx);
                     cmds_sug.AddRange(haz_sug);
-                }
-
-                if ((MainV2.eodTime <= MainV2.abortHomeTime) && (myStatus != missionStatus.Warning))
-                {
-                    myStatus = missionStatus.Warning;
-                    cmds.Clear();
-                    cmds = cmds_sug;
-
-                    processToScreen(cmds);
-                    if (batteryPlot != null)
-                    {
-                        batteryPlot.updatePoints(pointlist);
-                    }
                 }
             }
 
@@ -4575,17 +4562,6 @@ namespace ArdupilotMega.GCSViews
                 endM.ToolTipMode = MarkerTooltipMode.Always;
                 sug_polygons.Markers.Add(endM);
             }
-
-            if (MainV2.cs.firmware == MainV2.Firmwares.ArduPlane)
-            {
-                //routes.Markers.Add(new GMapMarkerPlane(currentloc, MainV2.cs.yaw, MainV2.cs.groundcourse, MainV2.cs.nav_bearing, MainV2.cs.target_bearing, MainMap) { ToolTipText = (MainV2.tripOdometer / 1000.0f).ToString("0.0 Km") + Environment.NewLine + (MainV2.tripTimer / 60.0).ToString("0.0 min"), ToolTipMode = MarkerTooltipMode.Always });
-                top.Markers.Clear();
-                top.Markers.Add(new GMapMarkerPlane(currentloc, MainV2.cs.yaw, MainV2.cs.groundcourse, MainV2.cs.nav_bearing, MainV2.cs.target_bearing, MainMap) { ToolTipText = (MainV2.tripOdometer / 1000.0f).ToString("0.0 Km") + Environment.NewLine + ((int)(MainV2.tripTimer / 60)).ToString("00:") + ((int)(((MainV2.tripTimer / 60.0) - (int)(MainV2.tripTimer / 60.0)) * 60)).ToString("00"), ToolTipMode = MarkerTooltipMode.Always });
-            }
-            else
-            {
-                routes.Markers.Add(new GMapMarkerQuad(currentloc, MainV2.cs.yaw, MainV2.cs.groundcourse, MainV2.cs.nav_bearing));
-            }
         }
 
         private void timer1_Tick(object sender, EventArgs e)
@@ -4596,6 +4572,19 @@ namespace ArdupilotMega.GCSViews
             firstDist = (float)MainMap.Manager.GetDistance(firstPoint, MainV2.home);
             try
             {
+                if ((MainV2.eodTime > 0) && (MainV2.eodTime <= MainV2.abortHomeTime) && (myStatus != missionStatus.Warning))
+                {
+                    myStatus = missionStatus.Warning;
+                    cmds.Clear();
+                    cmds = cmds_sug;
+
+                    processToScreen(cmds);
+                    if (batteryPlot != null)
+                    {
+                        batteryPlot.updatePoints(pointlist);
+                    }
+                }
+
 #if UDP_DATA
                 var remoteEP = new IPEndPoint(IPAddress.Any, 11000);
                 if (udpServer.Available > 0)
@@ -4608,22 +4597,26 @@ namespace ArdupilotMega.GCSViews
                     MainV2.soc3 = BitConverter.ToSingle(data, 20);
                     MainV2.soc4 = BitConverter.ToSingle(data, 24);
 #else
-                    int factor = 1;
-                    float delta_t = ((float)timer1.Interval/1000.0f); // sec
-                    float delta_d = delta_t * 250.0f;        // meters
+                    int factor = 10;
+                    float delta_t = ((float)(factor*timer1.Interval)/1000.0f); // sec
+                    float delta_d = delta_t * 25.0f;        // meters
                     float rms_soc_consumption = (float)RMS_soc.Value / 1000.0f;  //0.0022f;   // soc % per meter
-                    float cons_slope = 0; // 0.000002f;
-                    float consumptionRate = 0.70f;
+                    //float cons_slope = 0; // 0.000002f;
+                    //float consumptionRate = 0.70f;
 
-                    for (int i = 0; i < factor; i++)
-                    {
+                    //for (int i = 0; i < factor; i++)
+                    //{
                         MainV2.tripTimer += delta_t;            // seconds
                         MainV2.tripOdometer += delta_d;   // meters
-                        MainV2.soc1 -= consumptionRate * rms_soc_consumption * delta_d * (float)(1 + cons_slope * MainV2.tripOdometer + 0.0000 * Math.Sin(2 * Math.PI * MainV2.tripOdometer / 4000));
-                        MainV2.soc2 -= consumptionRate * rms_soc_consumption * delta_d * (float)(1 + cons_slope * MainV2.tripOdometer + 0.0000 * Math.Sin(2 * Math.PI * MainV2.tripOdometer / 5000));
-                        MainV2.soc3 -= consumptionRate * rms_soc_consumption * delta_d * (float)(1 + cons_slope * MainV2.tripOdometer + 0.0000 * Math.Sin(2 * Math.PI * MainV2.tripOdometer / 6000));
-                        MainV2.soc4 -= consumptionRate * rms_soc_consumption * delta_d * (float)(1 + cons_slope * MainV2.tripOdometer + 0.0000 * Math.Sin(2 * Math.PI * MainV2.tripOdometer / 7000));
-                    }
+                        //MainV2.soc1 -= consumptionRate * rms_soc_consumption * delta_d * (float)(1 + cons_slope * MainV2.tripOdometer + 0.0000 * Math.Sin(2 * Math.PI * MainV2.tripOdometer / 4000));
+                        //MainV2.soc2 -= consumptionRate * rms_soc_consumption * delta_d * (float)(1 + cons_slope * MainV2.tripOdometer + 0.0000 * Math.Sin(2 * Math.PI * MainV2.tripOdometer / 5000));
+                        //MainV2.soc3 -= consumptionRate * rms_soc_consumption * delta_d * (float)(1 + cons_slope * MainV2.tripOdometer + 0.0000 * Math.Sin(2 * Math.PI * MainV2.tripOdometer / 6000));
+                        //MainV2.soc4 -= consumptionRate * rms_soc_consumption * delta_d * (float)(1 + cons_slope * MainV2.tripOdometer + 0.0000 * Math.Sin(2 * Math.PI * MainV2.tripOdometer / 7000));
+                        MainV2.soc1 -= rms_soc_consumption * delta_d;
+                        MainV2.soc2 -= rms_soc_consumption * delta_d;
+                        MainV2.soc3 -= rms_soc_consumption * delta_d;
+                        MainV2.soc4 -= rms_soc_consumption * delta_d;
+                        //}
 #endif
 
                     if (MainV2.tripOdometer > MainV2.missionDist)
@@ -4765,9 +4758,21 @@ namespace ArdupilotMega.GCSViews
                             socp_list4.Add(MainV2.tripOdometer / 1000 + (float)i * d_delta, MainV2.soc4 - (float)i * d_delta * MainV2.instCons4_d[4]);
                         }
                     }
-                    count = ++count % 5;
+
+                    if (MainV2.cs.firmware == MainV2.Firmwares.ArduPlane)
+                    {
+                        //routes.Markers.Add(new GMapMarkerPlane(currentloc, MainV2.cs.yaw, MainV2.cs.groundcourse, MainV2.cs.nav_bearing, MainV2.cs.target_bearing, MainMap) { ToolTipText = (MainV2.tripOdometer / 1000.0f).ToString("0.0 Km") + Environment.NewLine + (MainV2.tripTimer / 60.0).ToString("0.0 min"), ToolTipMode = MarkerTooltipMode.Always });
+                        top.Markers.Clear();
+                        top.Markers.Add(new GMapMarkerPlane(currentloc, MainV2.cs.yaw, MainV2.cs.groundcourse, MainV2.cs.nav_bearing, MainV2.cs.target_bearing, MainMap) { ToolTipText = (MainV2.tripOdometer / 1000.0f).ToString("0.0 Km") + Environment.NewLine + ((int)(MainV2.tripTimer / 60)).ToString("00:") + ((int)(((MainV2.tripTimer / 60.0) - (int)(MainV2.tripTimer / 60.0)) * 60)).ToString("00"), ToolTipMode = MarkerTooltipMode.Always });
+                    }
+                    else
+                    {
+                        routes.Markers.Add(new GMapMarkerQuad(currentloc, MainV2.cs.yaw, MainV2.cs.groundcourse, MainV2.cs.nav_bearing));
+                    }
+
+                    //count = ++count % 2;
                     gcount = ++gcount % 10;
-                    pcount = ++pcount % 100;
+                    pcount = ++pcount % 10;
 #if UDP_DATA
                 }
 #endif
