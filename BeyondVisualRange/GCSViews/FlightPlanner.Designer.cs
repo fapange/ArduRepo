@@ -951,7 +951,7 @@
             // Decision
             // 
             this.Decision.Enabled = true;
-            this.Decision.Interval = 1000;
+            this.Decision.Interval = 10000;
             this.Decision.Tick += new System.EventHandler(this.Decision_Tick);
             // 
             // FlightPlanner

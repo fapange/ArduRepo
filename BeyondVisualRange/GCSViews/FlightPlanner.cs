@@ -4483,14 +4483,14 @@ namespace ArdupilotMega.GCSViews
                     if (myStatus == missionStatus.Normal)
                         myStatus = missionStatus.InsufficientCharge;
 
-                    float traveledDist = odometer - 200;
+                    float traveledDist = odometer;
                     for (MainV2.abortDist = MainV2.missionDist; MainV2.abortDist >= traveledDist; MainV2.abortDist -= 10.0f)
                     {
                         MainV2.abortTime = MainV2.abortDist / (60.0f * MainV2.avgSpeed[4]);
                         MainV2.abortLoc = OdometerToLatLng(MainV2.abortDist);
                         haz_sug = checkHazards(MainV2.abortLoc, firstPoint);
                         float haz_dist = (float)pathLength(haz_sug);
-                        MainV2.abortHomeDist = 1000.0f * (haz_dist + firstDist);
+                        MainV2.abortHomeDist = 1000.0f * (haz_dist + firstDist) + (MainV2.abortDist-traveledDist);
                         MainV2.abortHomeTime = MainV2.abortHomeDist / (60.0f * MainV2.avgSpeed[4]);
                         float hd = MainV2.abortHomeDist + (MainV2.abortDist - traveledDist);
                         if (hd <= MainV2.maxDistLeft) break;
