@@ -1,6 +1,6 @@
 ﻿#define SLV_ADDED
 
-//#define UDP_DATA
+#define UDP_DATA
 
 using System;
 using System.Collections.Generic; // Lists

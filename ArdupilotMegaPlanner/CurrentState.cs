@@ -425,13 +425,17 @@ namespace ArdupilotMega
             client.Connect(ep);
             //OdometerSEND = new UdpClient("localhost", 5500);
             //OdometerSEND = new UdpClient("127.0.0.1", 5500);
-            odata = new byte[4];
+            //odata = new byte[4];
+            odata = new byte[28];
         }
 
         const float rad2deg = (float)(180 / Math.PI);
         const float deg2rad = (float)(1.0 / rad2deg);
 
         private DateTime lastupdate = DateTime.Now;
+        private DateTime odoupdate = DateTime.Now;
+        private double tripTimer = 0;
+        private float batVal = 100f;
 
         //private DateTime lastwindcalc = DateTime.Now;
 
@@ -1159,10 +1163,21 @@ namespace ArdupilotMega
                             fwdCurr = ac.chan15 * 0.1230f - 2.2160f;
                             aftCurr = ac.chan16 * 0.1239f - 1.8688f;
                             usec = ac.usec;
-                            Array.Copy(BitConverter.GetBytes((float)odometer), 0, odata, 0, 4); // packet index
+                            tripTimer += (double)(DateTime.Now - odoupdate).Milliseconds/1000;
+                            odoupdate = DateTime.Now;
+                            batVal -= 0.005f;
+                            if (batVal < 25) batVal = 100;
+                            Array.Copy(BitConverter.GetBytes((double)tripTimer), 0, odata, 0, 8); // packet index
+                            Array.Copy(BitConverter.GetBytes((float)odometer), 0, odata, 8, 4); // packet index
+                            Array.Copy(BitConverter.GetBytes((float)batVal), 0, odata, 12, 4); // packet index
+                            Array.Copy(BitConverter.GetBytes((float)batVal), 0, odata, 16, 4); // packet index
+                            Array.Copy(BitConverter.GetBytes((float)batVal), 0, odata, 20, 4); // packet index
+                            Array.Copy(BitConverter.GetBytes((float)batVal), 0, odata, 24, 4); // packet index
+                            //Array.Copy(BitConverter.GetBytes((float)odometer), 0, odata, 0, 4); // packet index
                             try
                             {
-                                client.Send(odata, 4);
+                                client.Send(odata,28);
+                                //client.Send(odata, 4);
                                 //OdometerSEND.Send(odata, odata.Length);
                                 //Console.WriteLine("UDP client send {0} {1} bytes", odata.Length,odata.ToString());
                             }
