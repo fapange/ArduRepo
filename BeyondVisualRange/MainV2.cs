@@ -74,7 +74,9 @@ namespace ArdupilotMega
         public static int fpw;
         public static float missionDist = 0.0f;
         public static float tripTimer = 0; // { get; set; }
+        public static float tripTimerOff = 0; // { get; set; }
         public static float tripOdometer = 0.0f;
+        public static float tripOffset = 0.0f;
         public static float soc1 = 100.0f;
         public static float soc2 = 100.0f;
         public static float soc3 = 100.0f;

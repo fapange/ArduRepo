@@ -1,6 +1,6 @@
 ﻿#define SLV_ADDED
 
-#define UDP_DATA
+//#define UDP_DATA
 
 using System;
 using System.Collections.Generic; // Lists
@@ -4590,8 +4590,9 @@ namespace ArdupilotMega.GCSViews
                 if (udpServer.Available > 0)
                 {
                     var data = udpServer.Receive(ref remoteEP);
-                    MainV2.tripTimer = (float)BitConverter.ToDouble(data, 0);
-                    MainV2.tripOdometer = Math.Min(BitConverter.ToSingle(data, 8), MainV2.missionDist);
+                    MainV2.tripTimer = (float)BitConverter.ToDouble(data, 0) - MainV2.tripTimerOff;
+                    //MainV2.tripOdometer = Math.Min(BitConverter.ToSingle(data, 8), MainV2.missionDist) - MainV2.tripOffset;
+                    MainV2.tripOdometer = BitConverter.ToSingle(data, 8) - MainV2.tripOffset;
                     MainV2.soc1 = BitConverter.ToSingle(data, 12);
                     MainV2.soc2 = BitConverter.ToSingle(data, 16);
                     MainV2.soc3 = BitConverter.ToSingle(data, 20);
@@ -4621,7 +4622,9 @@ namespace ArdupilotMega.GCSViews
 
                     if (MainV2.tripOdometer > MainV2.missionDist)
                     {
+                        MainV2.tripTimerOff += MainV2.tripTimer;
                         MainV2.tripTimer = 0;
+                        MainV2.tripOffset += MainV2.tripOdometer;
                         MainV2.tripOdometer = 0;
                         MainV2.soc1 = 100;
                         MainV2.soc2 = 100;
