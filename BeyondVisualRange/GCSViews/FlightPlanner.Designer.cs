@@ -679,7 +679,7 @@
             this.RMS_soc.Name = "RMS_soc";
             this.RMS_soc.Tag = "RMS soc";
             this.RMS_soc.Value = new decimal(new int[] {
-            22,
+            12,
             0,
             0,
             65536});
@@ -951,7 +951,7 @@
             // Decision
             // 
             this.Decision.Enabled = true;
-            this.Decision.Interval = 10000;
+            this.Decision.Interval = 3000;
             this.Decision.Tick += new System.EventHandler(this.Decision_Tick);
             // 
             // FlightPlanner

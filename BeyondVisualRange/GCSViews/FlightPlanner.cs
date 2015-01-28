@@ -4470,12 +4470,56 @@ namespace ArdupilotMega.GCSViews
 
         private void Decision_Tick(object sender, EventArgs e)
         {
+            if (MainV2.tripOdometer > MainV2.missionDist)
+            {
+                MainV2.tripTimer = 0;
+                MainV2.tripOdometer = 0;
+                MainV2.soc1 = 100;
+                MainV2.soc2 = 100;
+                MainV2.soc3 = 100;
+                MainV2.soc4 = 100;
+                readQGC110wpfile(wp_file);
+                if (batteryPlot != null)
+                {
+                    batteryPlot.updatePoints(pointlist);
+                }
+                count = 0;
+                gcount = 0;
+                pcount = 0;
+            }
+
+            if (MainV2.tripOdometer == 0)
+            {
+                soc_list1.Clear();
+                soc_list2.Clear();
+                soc_list3.Clear();
+                soc_list4.Clear();
+                socd_list1.Clear();
+                socd_list2.Clear();
+                socd_list3.Clear();
+                socd_list4.Clear();
+            }
+
+            if ((MainV2.eodTime > 0) && (MainV2.eodTime <= MainV2.abortHomeTime) && (myStatus != missionStatus.Warning))
+            {
+                myStatus = missionStatus.Warning;
+                cmds.Clear();
+                cmds = cmds_sug;
+
+                processToScreen(cmds);
+                if (batteryPlot != null)
+                {
+                    batteryPlot.updatePoints(pointlist);
+                }
+            }
+
             if (MainV2.avgSpeed[4] > 0)
             {
                 if ((MainV2.etaTime < MainV2.eodTime) && (myStatus != missionStatus.Normal) && (myStatus != missionStatus.Warning))
                 { // suggested plan in case it needs to be aborted
                     myStatus = missionStatus.Normal;
                     cmds_sug.Clear();
+                    readQGC110wpfile(wp_file);
                 }
                 else if ((MainV2.etaTime >= MainV2.eodTime) && (myStatus != missionStatus.Warning))
                 { // suggested plan in case it needs to be aborted
@@ -4492,7 +4536,7 @@ namespace ArdupilotMega.GCSViews
                         float haz_dist = (float)pathLength(haz_sug);
                         MainV2.abortHomeDist = 1000.0f * (haz_dist + firstDist) + (MainV2.abortDist-traveledDist);
                         MainV2.abortHomeTime = MainV2.abortHomeDist / (60.0f * MainV2.avgSpeed[4]);
-                        float hd = MainV2.abortHomeDist + (MainV2.abortDist - traveledDist);
+                        float hd = MainV2.abortHomeDist; // +(MainV2.abortDist - traveledDist);
                         if (hd <= MainV2.maxDistLeft) break;
                     }
 
@@ -4572,18 +4616,6 @@ namespace ArdupilotMega.GCSViews
             firstDist = (float)MainMap.Manager.GetDistance(firstPoint, MainV2.home);
             try
             {
-                if ((MainV2.eodTime > 0) && (MainV2.eodTime <= MainV2.abortHomeTime) && (myStatus != missionStatus.Warning))
-                {
-                    myStatus = missionStatus.Warning;
-                    cmds.Clear();
-                    cmds = cmds_sug;
-
-                    processToScreen(cmds);
-                    if (batteryPlot != null)
-                    {
-                        batteryPlot.updatePoints(pointlist);
-                    }
-                }
 
 #if UDP_DATA
                 var remoteEP = new IPEndPoint(IPAddress.Any, 11000);
@@ -4619,24 +4651,6 @@ namespace ArdupilotMega.GCSViews
                         //}
 #endif
 
-                    if (MainV2.tripOdometer > MainV2.missionDist)
-                    {
-                        MainV2.tripTimer = 0;
-                        MainV2.tripOdometer = 0;
-                        MainV2.soc1 = 100;
-                        MainV2.soc2 = 100;
-                        MainV2.soc3 = 100;
-                        MainV2.soc4 = 100;
-                        readQGC110wpfile(wp_file);
-                        if (batteryPlot != null)
-                        {
-                            batteryPlot.updatePoints(pointlist);
-                        }
-                        count = 0;
-                        gcount = 0;
-                        pcount = 0;
-                    }
-
                     MainV2.timeTable.RemoveAt(0); MainV2.timeTable.Add(MainV2.tripTimer);
                     MainV2.distTable.RemoveAt(0); MainV2.distTable.Add(MainV2.tripOdometer);
                     MainV2.soc1Table.RemoveAt(0); MainV2.soc1Table.Add(MainV2.soc1);
@@ -4644,17 +4658,6 @@ namespace ArdupilotMega.GCSViews
                     MainV2.soc3Table.RemoveAt(0); MainV2.soc3Table.Add(MainV2.soc3);
                     MainV2.soc4Table.RemoveAt(0); MainV2.soc4Table.Add(MainV2.soc4);
 
-                    if (MainV2.tripOdometer == 0)
-                    {
-                        soc_list1.Clear();
-                        soc_list2.Clear();
-                        soc_list3.Clear();
-                        soc_list4.Clear();
-                        socd_list1.Clear();
-                        socd_list2.Clear();
-                        socd_list3.Clear();
-                        socd_list4.Clear();
-                    }
                     //Console.WriteLine("UDP time={0} ODO={1} SOC=[{2}:{3}:{4}:{5}]", MainV2.tripTimer, MainV2.tripOdometer, MainV2.soc1, MainV2.soc2, MainV2.soc3, MainV2.soc4);
 
                     MainV2.cs.wp_dist = 1000.0f;
@@ -4709,29 +4712,30 @@ namespace ArdupilotMega.GCSViews
                             MainV2.instCons4_d.RemoveAt(0); MainV2.instCons4_d.Add((MainV2.soc4Table[3] - MainV2.soc4Table[4]) / ((MainV2.distTable[4] - MainV2.distTable[3])/1000));
                             MainV2.avgCons4_d.RemoveAt(0); MainV2.avgCons4_d.Add((100 - MainV2.soc4) / MainV2.tripOdometer);
                             //MainV2.trndCons4_d;
+
+                            MainV2.retHomeDist = 1000.0f * (float)MainMap.Manager.GetDistance(currentloc, MainV2.home);
+                            MainV2.retHomeTime = MainV2.retHomeDist / (60.0f * MainV2.avgSpeed[4]);
+                            MainV2.remDist = (MainV2.missionDist - MainV2.tripOdometer);
+                            MainV2.etaTime = MainV2.remDist / (60.0f * MainV2.avgSpeed[4]);
+
+                            MainV2.eod1Time = (MainV2.soc1 - 30) / (60.0f * MainV2.instCons1_t[4]);
+                            MainV2.eod2Time = (MainV2.soc2 - 30) / (60.0f * MainV2.instCons2_t[4]);
+                            MainV2.eod3Time = (MainV2.soc3 - 30) / (60.0f * MainV2.instCons3_t[4]);
+                            MainV2.eod4Time = (MainV2.soc4 - 30) / (60.0f * MainV2.instCons4_t[4]);
+                            MainV2.eodTime = Math.Min(Math.Min(MainV2.eod1Time, MainV2.eod2Time), Math.Min(MainV2.eod3Time, MainV2.eod4Time));
+
+                            MainV2.eod1Dist = (MainV2.soc1 - 30) / (MainV2.instCons1_d[4] / 1000);
+                            MainV2.eod2Dist = (MainV2.soc2 - 30) / (MainV2.instCons2_d[4] / 1000);
+                            MainV2.eod3Dist = (MainV2.soc3 - 30) / (MainV2.instCons3_d[4] / 1000);
+                            MainV2.eod4Dist = (MainV2.soc4 - 30) / (MainV2.instCons4_d[4] / 1000);
+                            MainV2.eodDist = Math.Min(Math.Min(MainV2.eod1Dist, MainV2.eod2Dist), Math.Min(MainV2.eod3Dist, MainV2.eod4Dist));
+                            MainV2.eodDist = Math.Min(MainV2.eodDist, MainV2.missionDist);
+                            MainV2.eodDist = Math.Min(MainV2.eodDist, 60 * MainV2.eodTime * MainV2.avgSpeed[4]);
+
+                            MainV2.maxDistLeft = Math.Min(MainV2.eodDist, MainV2.remDist);
+                            MainV2.maxTimeLeft = Math.Min(MainV2.eodTime, MainV2.etaTime);
+                            MainV2.maxLoc = OdometerToLatLng(Math.Min(odometer + MainV2.maxDistLeft, MainV2.missionDist));
                         }
-
-                        MainV2.retHomeDist = 1000.0f * (float)MainMap.Manager.GetDistance(currentloc, MainV2.home);
-                        MainV2.retHomeTime = MainV2.retHomeDist / (60.0f * MainV2.avgSpeed[4]);
-                        MainV2.remDist = (MainV2.missionDist - MainV2.tripOdometer);
-                        MainV2.etaTime = MainV2.remDist / (60.0f * MainV2.avgSpeed[4]);
-
-                        MainV2.eod1Time = (MainV2.soc1 - 30) / (60.0f * MainV2.instCons1_t[4]);
-                        MainV2.eod2Time = (MainV2.soc2 - 30) / (60.0f * MainV2.instCons2_t[4]);
-                        MainV2.eod3Time = (MainV2.soc3 - 30) / (60.0f * MainV2.instCons3_t[4]);
-                        MainV2.eod4Time = (MainV2.soc4 - 30) / (60.0f * MainV2.instCons4_t[4]);
-                        MainV2.eodTime = Math.Min(Math.Min(MainV2.eod1Time, MainV2.eod2Time), Math.Min(MainV2.eod3Time, MainV2.eod4Time));
-
-                        MainV2.eod1Dist = (MainV2.soc1 - 30) / (MainV2.instCons1_d[4] / 1000);
-                        MainV2.eod2Dist = (MainV2.soc2 - 30) / (MainV2.instCons2_d[4] / 1000);
-                        MainV2.eod3Dist = (MainV2.soc3 - 30) / (MainV2.instCons3_d[4] / 1000);
-                        MainV2.eod4Dist = (MainV2.soc4 - 30) / (MainV2.instCons4_d[4] / 1000);
-                        MainV2.eodDist = Math.Min(Math.Min(MainV2.eod1Dist, MainV2.eod2Dist), Math.Min(MainV2.eod3Dist, MainV2.eod4Dist));
-                        MainV2.eodDist = Math.Min(MainV2.eodDist, MainV2.missionDist);
-
-                        MainV2.maxDistLeft = Math.Min(MainV2.eodDist, MainV2.remDist);
-                        MainV2.maxTimeLeft = Math.Min(MainV2.eodTime, MainV2.etaTime);
-                        MainV2.maxLoc = OdometerToLatLng(Math.Min(odometer + MainV2.maxDistLeft, MainV2.missionDist));
                     }
 
                     if (gcount == 0)
