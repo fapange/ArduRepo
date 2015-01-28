@@ -679,7 +679,7 @@
             this.RMS_soc.Name = "RMS_soc";
             this.RMS_soc.Tag = "RMS soc";
             this.RMS_soc.Value = new decimal(new int[] {
-            22,
+            12,
             0,
             0,
             65536});
