@@ -1892,9 +1892,9 @@ namespace ArdupilotMega.GCSViews
         /// </summary>
         void processToScreen(List<Locationwp> newcmds)
         {
-//#if SLV_ADDED
-//            bool found_jump = false;
-//#endif
+            PointLatLng p1;
+            PointLatLng p2;
+
             quickadd = true;
             Commands.Rows.Clear();
 
@@ -1908,11 +1908,6 @@ namespace ArdupilotMega.GCSViews
             foreach (Locationwp temp in newcmds)
             {
                 i++;
-#if SLV_ADDED
-                //Console.WriteLine("FP processToScreen " + i);
-                //if (temp.id == (byte)MAVLink.MAV_CMD.DO_JUMP) // 177) // JUMP command
-                //    found_jump = true;
-#endif
                 //Console.WriteLine("FP processToScreen " + i);
                 if (temp.id == 0 && i != 0) // 0 and not home
                     break;
@@ -1922,8 +1917,6 @@ namespace ArdupilotMega.GCSViews
                 {
                     Commands.Rows.Add();
                 }
-                //if (i == 0 && temp.alt == 0) // skip 0 home
-                  //  continue;
                 DataGridViewTextBoxCell cell;
                 DataGridViewComboBoxCell cellcmd;
                 cellcmd = Commands.Rows[i].Cells[Command.Index] as DataGridViewComboBoxCell;
@@ -1948,15 +1941,8 @@ namespace ArdupilotMega.GCSViews
                     {
                         CHK_altmode.Checked = false;
                     }
-
-
-
                 }
 
-#if SLV_ADDED
-                //if (!found_jump)
-                {
-#endif
                 cell = Commands.Rows[i].Cells[Alt.Index] as DataGridViewTextBoxCell;
                 cell.Value = Math.Round((temp.alt * MainV2.cs.multiplierdist), 0);
                 cell = Commands.Rows[i].Cells[Lat.Index] as DataGridViewTextBoxCell;
@@ -1972,9 +1958,6 @@ namespace ArdupilotMega.GCSViews
                 cell.Value = temp.p3;
                 cell = Commands.Rows[i].Cells[Param4.Index] as DataGridViewTextBoxCell;
                 cell.Value = temp.p4;
-#if SLV_ADDED
-                }
-#endif
             }
             try
             {
@@ -1984,16 +1967,11 @@ namespace ArdupilotMega.GCSViews
                 {
                     if (cellhome.Value.ToString() != TXT_homelat.Text && cellhome.Value.ToString() != "0")
                     {
-                        //DialogResult dr = MessageBox.Show("Reset Home to loaded coords", "Reset Home Coords", MessageBoxButtons.YesNo);
-
-                        //if (dr == DialogResult.Yes)
-                        //{
                         TXT_homelat.Text = (double.Parse(cellhome.Value.ToString())).ToString();
                         cellhome = Commands.Rows[0].Cells[Lon.Index] as DataGridViewTextBoxCell;
                         TXT_homelng.Text = (double.Parse(cellhome.Value.ToString())).ToString();
                         cellhome = Commands.Rows[0].Cells[Alt.Index] as DataGridViewTextBoxCell;
                         TXT_homealt.Text = (double.Parse(cellhome.Value.ToString()) * MainV2.cs.multiplierdist).ToString();
-                        //}
                     }
                 }
 
@@ -2050,27 +2028,18 @@ namespace ArdupilotMega.GCSViews
 
             writeKML();
 
-            PointLatLng p1;
-            PointLatLng p2;
-
-            //cumDist.Clear();
             missionPoints.Clear();
-            //legLength.Clear();
             missionBearing.Clear();
 
             MainV2.missionDist = 0;
-            //cumDist.Add(MainV2.missionDist);
             missionPoints.AddRange(pointlist.GetRange(0, pointlist.Count));
-            //missionPoints.Add(pointlist[0]);
 
             for (i = 1; i < missionPoints.Count; i++)
             {
                 p1 = new PointLatLng(missionPoints[i - 1].Lat, missionPoints[i - 1].Lng);
                 p2 = new PointLatLng(missionPoints[i].Lat, missionPoints[i].Lng);
-                //legLength.Add((float)MainMap.Manager.GetDistance(p1, p2) * 1000.0f);
                 missionBearing.Add((float)MainMap.Manager.GetBearing(p1,p2));
                 MainV2.missionDist += legLength[i - 1];
-                //cumDist.Add(MainV2.missionDist);
             }
             MainV2.home = new PointLatLng(cmds[0].lat, cmds[0].lng);
             MainV2.abortDist = MainV2.missionDist;
@@ -4564,7 +4533,7 @@ namespace ArdupilotMega.GCSViews
             }
         }
 
-        private void timer1_Tick(object sender, EventArgs e)
+        private void Data_Tick(object sender, EventArgs e)
         {
             MainV2.fpw = panelAction.Width;
             int p1idx = missionPoints.Count > 1 ? 1 : 0;
@@ -4599,7 +4568,7 @@ namespace ArdupilotMega.GCSViews
                     MainV2.soc4 = BitConverter.ToSingle(data, 24);
 #else
                     int factor = 10;
-                    float delta_t = ((float)(factor*timer1.Interval)/1000.0f); // sec
+                    float delta_t = ((float)(factor*Data.Interval)/1000.0f); // sec
                     float delta_d = delta_t * 25.0f;        // meters
                     float rms_soc_consumption = (float)RMS_soc.Value / 1000.0f;  //0.0022f;   // soc % per meter
                     //float cons_slope = 0; // 0.000002f;
@@ -4788,6 +4757,5 @@ namespace ArdupilotMega.GCSViews
             batteryPlot = new BatteryGraph(pointlist);
             batteryPlot.Show();
         }
-
     }
 }
