@@ -1173,13 +1173,9 @@ namespace ArdupilotMega
                             Array.Copy(BitConverter.GetBytes((float)batVal), 0, odata, 16, 4); // packet index
                             Array.Copy(BitConverter.GetBytes((float)batVal), 0, odata, 20, 4); // packet index
                             Array.Copy(BitConverter.GetBytes((float)batVal), 0, odata, 24, 4); // packet index
-                            //Array.Copy(BitConverter.GetBytes((float)odometer), 0, odata, 0, 4); // packet index
                             try
                             {
                                 client.Send(odata,28);
-                                //client.Send(odata, 4);
-                                //OdometerSEND.Send(odata, odata.Length);
-                                //Console.WriteLine("UDP client send {0} {1} bytes", odata.Length,odata.ToString());
                             }
                             catch (Exception e) { log.Info("Odometer udp send error " + e.Message); }
                             break;
@@ -1198,11 +1194,34 @@ namespace ArdupilotMega
                             aymax_g = ac.chan11;
                             azmax_g = ac.chan12;
                             mycruisethrottle = ac.chan13;
+                            odometer = ac.chan14;   // *6.976536f - 42.398147f;
+                            aRPM = 0.0f;   // *6.976536f - 42.398147f;
+                            fRPM = aRPM;        // *6.976536f - 42.398147f;
+                            fwdCurr = ac.chan15 * 0.1230f - 2.2160f;
+                            aftCurr = ac.chan16 * 0.1239f - 1.8688f;
+                            usec = ac.usec;
+                            tripTimer += (double)(DateTime.Now - odoupdate).Milliseconds/1000;
+                            odoupdate = DateTime.Now;
+                            //batVal -= 0.005f;
+                            //if (batVal < 25) batVal = 100;
+                            Array.Copy(BitConverter.GetBytes((double)tripTimer), 0, odata, 0, 8); // packet index
+                            Array.Copy(BitConverter.GetBytes((float)odometer), 0, odata, 8, 4); // packet index
+                            Array.Copy(BitConverter.GetBytes((float)batVal), 0, odata, 12, 4); // packet index
+                            Array.Copy(BitConverter.GetBytes((float)batVal), 0, odata, 16, 4); // packet index
+                            Array.Copy(BitConverter.GetBytes((float)batVal), 0, odata, 20, 4); // packet index
+                            Array.Copy(BitConverter.GetBytes((float)batVal), 0, odata, 24, 4); // packet index
+                            try
+                            {
+                                client.Send(odata,28);
+                            }
+                            catch (Exception e) { log.Info("Odometer udp send error " + e.Message); }
+/*
                             aRPM = ac.chan14/1000.0f;   // *6.976536f - 42.398147f;
                             fRPM = aRPM;        // *6.976536f - 42.398147f;
                             fwdCurr = ac.chan15 * 0.1230f - 2.2160f;
                             aftCurr = ac.chan16 * 0.1239f - 1.8688f;
                             usec = ac.usec;
+*/
 /*
  *                          left_ail = ac.chan01;
                             left_flap = ac.chan02;

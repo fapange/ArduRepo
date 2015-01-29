@@ -191,6 +191,7 @@
 #define	CH_7_RC_FAILSAFE  1499
 #define	CH_8_RC_FAILSAFE  1198
 
+/*
 #define ANALOG_EU_01        (float)(ac_ch[0])
 #define ANALOG_EU_02        (float)RC_state
 #define ANALOG_EU_03        (wind_dir/100.0f)
@@ -208,7 +209,7 @@
 #define ANALOG_EU_15        (float)(ac_ch[12])
 #define ANALOG_EU_16        (float)(ac_ch[13])
 
-/*
+
 #define ANALOG_EU_01        (float)(ac_ch[0])
 #define ANALOG_EU_02        (float)RC_state
 #define ANALOG_EU_03        (wind_dir/100.0f)
@@ -226,6 +227,23 @@
 #define ANALOG_EU_15        (float)(ac_ch[14])
 #define ANALOG_EU_16        (float)(ac_ch[15])
 */
+
+#define ANALOG_EU_01        (float)(ac_ch[0])
+#define ANALOG_EU_02        (float)RC_state
+#define ANALOG_EU_03        (wind_dir/100.0f)
+#define ANALOG_EU_04        (wind_vel/100.0f)
+#define ANALOG_EU_05        (float)(WptRadius)
+#define ANALOG_EU_06        (float)(time_left)
+#define ANALOG_EU_07        (accel_min.x)
+#define ANALOG_EU_08        (accel_min.y)
+#define ANALOG_EU_09        (accel_min.z)
+#define ANALOG_EU_10        (accel_max.x)
+#define ANALOG_EU_11        (accel_max.y)
+#define ANALOG_EU_12        (accel_max.z)
+#define ANALOG_EU_13        (target_cruisethrottle)
+#define ANALOG_EU_14        (float)odometer
+#define ANALOG_EU_15        (float)(ac_ch[12])
+#define ANALOG_EU_16        (float)(ac_ch[13])
 
 #define THROTTLE_GAIN	 1.0000f
 #define THROTTLE_OFFSET  0.0000f

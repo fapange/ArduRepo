@@ -4439,6 +4439,51 @@ namespace ArdupilotMega.GCSViews
 
         private void Decision_Tick(object sender, EventArgs e)
         {
+            if ((MainV2.eodTime > 0) && (MainV2.eodTime <= MainV2.abortHomeTime) && (myStatus != missionStatus.Warning))
+            {
+                myStatus = missionStatus.Warning;
+                cmds.Clear();
+                cmds = cmds_sug;
+
+                processToScreen(cmds);
+                if (batteryPlot != null)
+                {
+                    batteryPlot.updatePoints(pointlist);
+                }
+            }
+
+            if (MainV2.tripOdometer > MainV2.missionDist)
+            {
+                MainV2.tripTimerOff += MainV2.tripTimer;
+                MainV2.tripTimer = 0;
+                MainV2.tripOffset += MainV2.tripOdometer;
+                MainV2.tripOdometer = 0;
+                MainV2.soc1 = 100;
+                MainV2.soc2 = 100;
+                MainV2.soc3 = 100;
+                MainV2.soc4 = 100;
+                readQGC110wpfile(wp_file);
+                if (batteryPlot != null)
+                {
+                    batteryPlot.updatePoints(pointlist);
+                }
+                count = 0;
+                gcount = 0;
+                pcount = 0;
+            }
+
+            if (MainV2.tripOdometer == 0)
+            {
+                soc_list1.Clear();
+                soc_list2.Clear();
+                soc_list3.Clear();
+                soc_list4.Clear();
+                socd_list1.Clear();
+                socd_list2.Clear();
+                socd_list3.Clear();
+                socd_list4.Clear();
+            }
+            
             if (MainV2.avgSpeed[4] > 0)
             {
                 if ((MainV2.etaTime < MainV2.eodTime) && (myStatus != missionStatus.Normal) && (myStatus != missionStatus.Warning))
@@ -4541,18 +4586,6 @@ namespace ArdupilotMega.GCSViews
             firstDist = (float)MainMap.Manager.GetDistance(firstPoint, MainV2.home);
             try
             {
-                if ((MainV2.eodTime > 0) && (MainV2.eodTime <= MainV2.abortHomeTime) && (myStatus != missionStatus.Warning))
-                {
-                    myStatus = missionStatus.Warning;
-                    cmds.Clear();
-                    cmds = cmds_sug;
-
-                    processToScreen(cmds);
-                    if (batteryPlot != null)
-                    {
-                        batteryPlot.updatePoints(pointlist);
-                    }
-                }
 
 #if UDP_DATA
                 var remoteEP = new IPEndPoint(IPAddress.Any, 11000);
@@ -4571,43 +4604,14 @@ namespace ArdupilotMega.GCSViews
                     float delta_t = ((float)(factor*Data.Interval)/1000.0f); // sec
                     float delta_d = delta_t * 25.0f;        // meters
                     float rms_soc_consumption = (float)RMS_soc.Value / 1000.0f;  //0.0022f;   // soc % per meter
-                    //float cons_slope = 0; // 0.000002f;
-                    //float consumptionRate = 0.70f;
 
-                    //for (int i = 0; i < factor; i++)
-                    //{
-                        MainV2.tripTimer += delta_t;            // seconds
-                        MainV2.tripOdometer += delta_d;   // meters
-                        //MainV2.soc1 -= consumptionRate * rms_soc_consumption * delta_d * (float)(1 + cons_slope * MainV2.tripOdometer + 0.0000 * Math.Sin(2 * Math.PI * MainV2.tripOdometer / 4000));
-                        //MainV2.soc2 -= consumptionRate * rms_soc_consumption * delta_d * (float)(1 + cons_slope * MainV2.tripOdometer + 0.0000 * Math.Sin(2 * Math.PI * MainV2.tripOdometer / 5000));
-                        //MainV2.soc3 -= consumptionRate * rms_soc_consumption * delta_d * (float)(1 + cons_slope * MainV2.tripOdometer + 0.0000 * Math.Sin(2 * Math.PI * MainV2.tripOdometer / 6000));
-                        //MainV2.soc4 -= consumptionRate * rms_soc_consumption * delta_d * (float)(1 + cons_slope * MainV2.tripOdometer + 0.0000 * Math.Sin(2 * Math.PI * MainV2.tripOdometer / 7000));
-                        MainV2.soc1 -= rms_soc_consumption * delta_d;
-                        MainV2.soc2 -= rms_soc_consumption * delta_d;
-                        MainV2.soc3 -= rms_soc_consumption * delta_d;
-                        MainV2.soc4 -= rms_soc_consumption * delta_d;
-                        //}
+                    MainV2.tripTimer += delta_t;            // seconds
+                    MainV2.tripOdometer += delta_d;   // meters
+                    MainV2.soc1 -= rms_soc_consumption * delta_d;
+                    MainV2.soc2 -= rms_soc_consumption * delta_d;
+                    MainV2.soc3 -= rms_soc_consumption * delta_d;
+                    MainV2.soc4 -= rms_soc_consumption * delta_d;
 #endif
-
-                    if (MainV2.tripOdometer > MainV2.missionDist)
-                    {
-                        MainV2.tripTimerOff += MainV2.tripTimer;
-                        MainV2.tripTimer = 0;
-                        MainV2.tripOffset += MainV2.tripOdometer;
-                        MainV2.tripOdometer = 0;
-                        MainV2.soc1 = 100;
-                        MainV2.soc2 = 100;
-                        MainV2.soc3 = 100;
-                        MainV2.soc4 = 100;
-                        readQGC110wpfile(wp_file);
-                        if (batteryPlot != null)
-                        {
-                            batteryPlot.updatePoints(pointlist);
-                        }
-                        count = 0;
-                        gcount = 0;
-                        pcount = 0;
-                    }
 
                     MainV2.timeTable.RemoveAt(0); MainV2.timeTable.Add(MainV2.tripTimer);
                     MainV2.distTable.RemoveAt(0); MainV2.distTable.Add(MainV2.tripOdometer);
@@ -4616,17 +4620,6 @@ namespace ArdupilotMega.GCSViews
                     MainV2.soc3Table.RemoveAt(0); MainV2.soc3Table.Add(MainV2.soc3);
                     MainV2.soc4Table.RemoveAt(0); MainV2.soc4Table.Add(MainV2.soc4);
 
-                    if (MainV2.tripOdometer == 0)
-                    {
-                        soc_list1.Clear();
-                        soc_list2.Clear();
-                        soc_list3.Clear();
-                        soc_list4.Clear();
-                        socd_list1.Clear();
-                        socd_list2.Clear();
-                        socd_list3.Clear();
-                        socd_list4.Clear();
-                    }
                     //Console.WriteLine("UDP time={0} ODO={1} SOC=[{2}:{3}:{4}:{5}]", MainV2.tripTimer, MainV2.tripOdometer, MainV2.soc1, MainV2.soc2, MainV2.soc3, MainV2.soc4);
 
                     MainV2.cs.wp_dist = 1000.0f;
