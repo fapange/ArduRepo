@@ -61,9 +61,9 @@ version 2.1 of the License, or (at your option) any later version.
 #define SLV_GIT_CODE "GIT:38b3e45 08.22.2014"
 
 #if SLV_FLIGHTMODE == HILSIM_MODE
-	#define THISFIRMWARE "ArduPlane V2.27 GIT: 38b3e45 08.22.2014 Simulation"
+	#define THISFIRMWARE "ArduPlane V2.27 GIT: c3526187 01.29.2015 Simulation"
 #else
-	#define THISFIRMWARE "ArduPlane V2.27 GIT: 38b3e45 08.22.2014 Flight"
+	#define THISFIRMWARE "ArduPlane V2.27 GIT: c3526187 01.29.2015 Flight"
 #endif
 
 // Local modules
