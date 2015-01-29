@@ -58,7 +58,7 @@ version 2.1 of the License, or (at your option) any later version.
 // Configuration
 #include "config.h"
 
-#define SLV_GIT_CODE "GIT:38b3e45 08.22.2014"
+#define SLV_GIT_CODE "GIT:c3526187 01.29.2015"
 
 #if SLV_FLIGHTMODE == HILSIM_MODE
 	#define THISFIRMWARE "ArduPlane V2.27 GIT: c3526187 01.29.2015 Simulation"
