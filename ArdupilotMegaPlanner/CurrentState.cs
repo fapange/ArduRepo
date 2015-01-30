@@ -495,26 +495,19 @@ namespace ArdupilotMega
                             MainV2.Vz = BitConverter.ToDouble(buffer, 52);
                             MainV2.Own = buffer[60];
                             #if true
+                                achar[0] = MainV2.ID[0]; achar[1] = 0; n0 = BitConverter.ToChar(achar, 0);
+                                achar[0] = MainV2.ID[1]; achar[1] = 0; n1 = BitConverter.ToChar(achar, 0);
+                                achar[0] = MainV2.ID[2]; achar[1] = 0; n2 = BitConverter.ToChar(achar, 0);
+                                achar[0] = MainV2.ID[3]; achar[1] = 0; n3 = BitConverter.ToChar(achar, 0);
+                                achar[0] = MainV2.ID[4]; achar[1] = 0; n4 = BitConverter.ToChar(achar, 0);
+                                achar[0] = MainV2.ID[5]; achar[1] = 0; n5 = BitConverter.ToChar(achar, 0);
+                                achar[0] = MainV2.ID[6]; achar[1] = 0; n6 = BitConverter.ToChar(achar, 0);
+                                achar[0] = MainV2.ID[7]; achar[1] = 0; n7 = BitConverter.ToChar(achar, 0);
+                                aname = n0.ToString() + n1.ToString() + n2.ToString() + n3.ToString() + n4.ToString() + n5.ToString() + n6.ToString() + n7.ToString();
+                                
                                 newTraffic = true;
                                 for (trafficIdx = 0; ((trafficIdx < MainV2.trafficTable.Count) && newTraffic); trafficIdx++)
                                 {
-                                    achar[0] = MainV2.ID[0]; achar[1] = 0;
-                                    n0 = BitConverter.ToChar(achar, 0);
-                                    achar[0] = MainV2.ID[1]; achar[1] = 0;
-                                    n1 = BitConverter.ToChar(achar, 0);
-                                    achar[0] = MainV2.ID[2]; achar[1] = 0;
-                                    n2 = BitConverter.ToChar(achar, 0);
-                                    achar[0] = MainV2.ID[3]; achar[1] = 0;
-                                    n3 = BitConverter.ToChar(achar, 0);
-                                    achar[0] = MainV2.ID[4]; achar[1] = 0;
-                                    n4 = BitConverter.ToChar(achar, 0);
-                                    achar[0] = MainV2.ID[5]; achar[1] = 0;
-                                    n5 = BitConverter.ToChar(achar, 0);
-                                    achar[0] = MainV2.ID[6]; achar[1] = 0;
-                                    n6 = BitConverter.ToChar(achar, 0);
-                                    achar[0] = MainV2.ID[7]; achar[1] = 0;
-                                    n7 = BitConverter.ToChar(achar, 0);
-                                    aname = n0.ToString() + n1.ToString() + n2.ToString() + n3.ToString() + n4.ToString() + n5.ToString() + n6.ToString() + n7.ToString();
                                     if (MainV2.trafficTable[trafficIdx].ID.Equals(aname))
                                     {
                                         newTraffic = false;
@@ -522,23 +515,6 @@ namespace ArdupilotMega
                                 }
                                 if (newTraffic)
                                 {
-                                    achar[0] = MainV2.ID[0]; achar[1] = 0;
-                                    n0 = BitConverter.ToChar(achar, 0);
-                                    achar[0] = MainV2.ID[1]; achar[1] = 0;
-                                    n1 = BitConverter.ToChar(achar, 0);
-                                    achar[0] = MainV2.ID[2]; achar[1] = 0;
-                                    n2 = BitConverter.ToChar(achar, 0);
-                                    achar[0] = MainV2.ID[3]; achar[1] = 0;
-                                    n3 = BitConverter.ToChar(achar, 0);
-                                    achar[0] = MainV2.ID[4]; achar[1] = 0;
-                                    n4 = BitConverter.ToChar(achar, 0);
-                                    achar[0] = MainV2.ID[5]; achar[1] = 0;
-                                    n5 = BitConverter.ToChar(achar, 0);
-                                    achar[0] = MainV2.ID[6]; achar[1] = 0;
-                                    n6 = BitConverter.ToChar(achar, 0);
-                                    achar[0] = MainV2.ID[7]; achar[1] = 0;
-                                    n7 = BitConverter.ToChar(achar, 0);
-                                    aname = n0.ToString() + n1.ToString() + n2.ToString() + n3.ToString() + n4.ToString() + n5.ToString() + n6.ToString() + n7.ToString();
                                     MainV2.trafficTable.Add(new MainV2.Aircraft(aname, (float)MainV2.Latitude, (float)MainV2.Longitude, (float)MainV2.Elevation, (float)MainV2.Vz));
                                     //Console.Write("                                              Added  : "); Console.WriteLine(aname);
                                 }
