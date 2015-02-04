@@ -447,6 +447,7 @@ static long nav_geo_fence()
     uint8_t i,j;
 	int segn=0;
 	long geoHeading;
+	long navHeading;
 	static long resHeading = 0;
 	float distm;
 	float mdist;
@@ -465,6 +466,7 @@ static long nav_geo_fence()
 	Vector2f geo;
 	Vector2f geoPoint;
 	Vector2f xp,yp;
+	Vector2f geoNav;
 	Vector2f nav;
 	Vector2f pnav;
 	Vector2f cur;
@@ -478,10 +480,10 @@ static long nav_geo_fence()
 		return (0L);
     
 	// Current Location
-	p = Vector2f((float)current_loc.lat/1e7f,(float)current_loc.lng/1e7f);
+	p = Vector2f((float)current_loc.lat,(float)current_loc.lng)/1e7f;
 	
 	// Waypoint Location
-	wp = Vector2f((float)next_WP.lat/1e7f,(float)next_WP.lng/1e7f);
+	wp = Vector2f((float)next_WP.lat,(float)next_WP.lng)/1e7f;
 	
 	// Nav Heading
 	//nav = Vector2f((float)(cos(ToRad((float)nav_bearing/100.0f))), (float)(sin(ToRad((float)nav_bearing/100.0f))));
@@ -495,29 +497,46 @@ static long nav_geo_fence()
 		w = Vector2f((float)geofence_state->boundary[j].x,(float)geofence_state->boundary[j].y)/1e7f;
 		geoPoint = find_closest_point(v, w, p);
 		distm = get_distance(&p,&geoPoint);
-		if (distm < mdist)
+		//Serial.printf_P (PSTR("geo <%.2f,%.2f> %.2f\n"),geoPoint.x,geoPoint.y,distm);
+		if (distm > 0 && distm < mdist)
 		{
 			segn = i;
 			xp = (w-v).normalized();			// Vector along fence
+			//Serial.printf_P (PSTR("xp <%.2f,%.2f> "),xp.x,xp.y);
 			if (geofence_state->state == OUTSIDE)
+			{
 				yp = (geoPoint-p).normalized();		// Vector normal to fence
+				//Serial.printf_P (PSTR("yp_out <%.2f,%.2f>\n"),yp.x,yp.y);
+			}
 			else
+			{
 				yp = (p-geoPoint).normalized();		// Vector normal to fence
+				//Serial.printf_P (PSTR("yp_in  <%.2f,%.2f> \n"),yp.x,yp.y);
+			}
 			mdist = distm;
 		}
 	}
 
 	// Calculate weights
 	//aweight = (dot(pnav,-yp)+1.0f)/2.0f;
-	aweight = 0.0f;
-	dweight = 1.0f/(1.0f+exp(-0.05f*(150.0f+20.0f*aweight-mdist)));
-	//mweight = dweight * (q + (1.0f-q)*aweight);
+	//aweight = 0.0f;
+	//dweight = 1.0f/(1.0f+exp(-0.05f*(150.0f+20.0f*aweight-mdist)));
+	dweight = 1.0f/(1.0f+exp((mdist-80.0f)/20.0f));
 	mweight = dweight;
+	//Serial.printf_P (PSTR("mdist=%.2f  weight=%.2f\n"),mdist,dweight);
+	//mweight = dweight * (q + (1.0f-q)*aweight);
 
 	// Correct Nav Bearing due to closeness to the geofence
+	//nav_yp = yp * mweight + nav.projected(yp)*(1.0f-mweight);
+	//nav_xp = nav.projected(xp) * (float)sqrt(1.0f-nav_yp.length_squared());
+	//nav = (nav_xp + nav_yp).normalized();
+
+	// Correct Nav Bearing due to closeness to the geofence
+	nav_xp = nav.projected(xp)*(1.0f-0.75f*mweight);
 	nav_yp = yp * mweight + nav.projected(yp)*(1.0f-mweight);
-	nav_xp = nav.projected(xp) * (float)sqrt(1.0f-nav_yp.length_squared());
-	nav = (nav_xp + nav_yp).normalized();
+	geoNav = (nav_xp + nav_yp).normalized();
+	//Serial.printf_P (PSTR("nXp <%.2f,%.2f> "),nav_xp.x,nav_xp.y);
+	//Serial.printf_P (PSTR("nYp <%.2f,%.2f> "),nav_yp.x,nav_yp.y);
 
 	//Serial.printf_P (PSTR("segn=%d dist=%.0f dw=%.3f aw=%.3f weight=%.3f "),segn,mdist,dweight,aweight,mweight);
 
@@ -534,15 +553,25 @@ static long nav_geo_fence()
 	//	nav = nav_xp + nav_yp;
 	//}
 
-	geoHeading = (long)get_bearing(&p, &(p+nav));
-	resHeading = wrap_180(last_nav_heading-nav_bearing) + constrain(wrap_180(geoHeading-last_nav_heading),-navSLEW,navSLEW);
+	geoHeading = (long)get_bearing(&p, &(p+geoNav));
+	navHeading = (long)get_bearing(&p, &(p+nav));
+	//Serial.printf_P (PSTR("w[%d](%.2f) nav <%.2f,%.2f>  gH=%d nH=%d "),segn,mweight,geoNav.x,geoNav.y,geoHeading/100,navHeading/100);
+	//resHeading = wrap_180(last_nav_heading-nav_bearing) + constrain(wrap_180(geoHeading-last_nav_heading),-navSLEW,navSLEW);
 	//resHeading = constrain(wrap_180(geoHeading - nav_bearing), -18000, 18000);
+	//resHeading = constrain(wrap_180(geoHeading - navHeading), -navSLEW, navSLEW);
+	resHeading = wrap_180(geoHeading - navHeading);
 	//Serial.printf_P (PSTR("angle=%d\n"),resHeading/100);
 	
 	if (geofence_enabled())
+	{
+		//Serial.printf_P (PSTR("Geo ON"));
 		return (resHeading);
+	}
 	else
+	{
+		//Serial.printf_P (PSTR("Geo OFF"));
 		return (0L);
+	}
 }
 
 static Vector2f find_closest_point(Vector2f v, Vector2f w, Vector2f p)
@@ -555,7 +584,10 @@ static Vector2f find_closest_point(Vector2f v, Vector2f w, Vector2f p)
 	// It falls where t = [(p-v) . (w-v)] / |w-v|^2
 	
 	t = dot(w-v,p-v)/dot(w-v,w-v);
-	projection = v + (w - v) * t;  // Projection falls on the segment
+	if (t>0.0f && t<1.0f)
+		projection = v + (w - v) * t;  // Projection falls on the segment
+	else
+		projection = v*0.0f;
 	return (projection);
 }
 
