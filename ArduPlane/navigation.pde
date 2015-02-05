@@ -539,8 +539,8 @@ static long nav_geo_fence()
 #endif
 			dweight = 1.0f/(1.0f+exp((distm-dt)/20.0f));
 			mweight = dweight;
-			if (mweight > 0.2) Serial.printf_P (PSTR("[%2.2d] "),segn);
-			if (mweight > 0.2) Serial.printf_P (PSTR("w=%.2f dt=%.2f  "),mweight,dt);
+			//if (mweight > 0.2) Serial.printf_P (PSTR("[%2.2d] "),segn);
+			//if (mweight > 0.2) Serial.printf_P (PSTR("w=%.2f dt=%.2f  "),mweight,dt);
 
 			//Serial.printf_P (PSTR("mdist=%.2f  weight=%.2f\n"),mdist,dweight);
 			//mweight = dweight * (q + (1.0f-q)*aweight);
@@ -554,14 +554,14 @@ static long nav_geo_fence()
 			nav_xp = nav.projected(xp)*(1.0f-0.75f*mweight);
 			nav_yp = yp * mweight + nav.projected(yp)*(1.0f-mweight);
 			//Serial.printf_P (PSTR("w=%.2f "),mweight);
-			if (mweight > 0.2) Serial.printf_P (PSTR("nXp<%.2f,%.2f> "),nav_xp.x,nav_xp.y);
-			if (mweight > 0.2) Serial.printf_P (PSTR("nYp<%.2f,%.2f> "),nav_yp.x,nav_yp.y);
+			//if (mweight > 0.2) Serial.printf_P (PSTR("nXp<%.2f,%.2f> "),nav_xp.x,nav_xp.y);
+			//if (mweight > 0.2) Serial.printf_P (PSTR("nYp<%.2f,%.2f> "),nav_yp.x,nav_yp.y);
 			geoNav = ((nav_xp + nav_yp)*mweight + geoNav);
 		}
 	}
 	geoNav.normalize();
 	Serial.printf_P (PSTR("nav<%.2f,%.2f> "),nav.x,nav.y);
-	Serial.printf_P (PSTR("geo<%.2f,%.2f>\n"),geoNav.x,geoNav.y);
+	Serial.printf_P (PSTR("geo<%.2f,%.2f> "),geoNav.x,geoNav.y);
 	//Serial.printf_P (PSTR("nXp <%.2f,%.2f> "),nav_xp.x,nav_xp.y);
 	//Serial.printf_P (PSTR("nYp <%.2f,%.2f> "),nav_yp.x,nav_yp.y);
 
@@ -583,10 +583,13 @@ static long nav_geo_fence()
 	geoHeading = (long)get_bearing(&p, &(p+geoNav));
 	navHeading = (long)get_bearing(&p, &(p+nav));
 	//Serial.printf_P (PSTR("nav <%.2f,%.2f>  gH=%d nH=%d "),geoNav.x,geoNav.y,geoHeading/100,navHeading/100);
+	Serial.printf_P (PSTR("gH=%d "),geoHeading/100);
+	Serial.printf_P (PSTR("nH=%d "),navHeading/100);
 	//resHeading = wrap_180(last_nav_heading-nav_bearing) + constrain(wrap_180(geoHeading-last_nav_heading),-navSLEW,navSLEW);
 	//resHeading = constrain(wrap_180(geoHeading - nav_bearing), -18000, 18000);
-	resHeading = constrain(wrap_180(geoHeading - navHeading), -navSLEW, navSLEW);
-	//resHeading = wrap_180(geoHeading - navHeading);
+	//resHeading = constrain(wrap_180(geoHeading - navHeading), -navSLEW, navSLEW);
+	resHeading = wrap_180(geoHeading - navHeading);
+	Serial.printf_P (PSTR("Geo=%d\n"),resHeading/100);
 
 	if (mode_change_counter > 0) 
 		mode_change_counter = mode_change_counter-1;
