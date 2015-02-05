@@ -275,6 +275,7 @@ static void geofence_state_machine(void)
 		case INSIDE:
 			if (breach)
 			{
+				gcs_send_text_P(SEVERITY_HIGH,PSTR("Outside Geo-Containment"));
 				geofence_state->pre_state = geofence_state->state;
 				geofence_state->state = EXITING;
 			}
@@ -299,6 +300,7 @@ static void geofence_state_machine(void)
 		case OUTSIDE:
 			if (!breach)
 			{
+				gcs_send_text_P(SEVERITY_HIGH,PSTR("Inside Geo-Containment"));
 				geofence_state->pre_state = geofence_state->state;
 				geofence_state->state = ENTERING;
 			}

@@ -433,19 +433,26 @@ static bool verify_nav_wp()
 
 	if ((control_mode == AUTO) && (((wp_distance > 0) && (wp_distance <= WptRadius)) || location_past_point() || skip_wpt)) 
 	{
-		skip_wpt = false;
 		WptRadius = g.waypoint_radius;
 
 		if (b_4DWaypointsEnabled() && b_4Dflag && (nav_command_index>0))
 		{
 			// 4D mode is active
-			gcs_send_text_fmt(PSTR("Reached Waypoint %i in %d sec"),nav_command_index, (int)elapsed_time);
+			if (skip_wpt)
+				gcs_send_text_fmt(PSTR("Skipped Waypoint %i in %d sec"),nav_command_index, (int)elapsed_time);
+			else
+				gcs_send_text_fmt(PSTR("Reached Waypoint %i in %d sec"),nav_command_index, (int)elapsed_time);
 		}
 		else
 		{
 			// 4D mode is not active
-			gcs_send_text_fmt(PSTR("Reached Waypoint %i"),nav_command_index);
+			if (skip_wpt)
+				gcs_send_text_fmt(PSTR("Skipped Waypoint %i"),nav_command_index);
+			else
+				gcs_send_text_fmt(PSTR("Reached Waypoint %i"),nav_command_index);
 		}
+
+		skip_wpt = false;
 		elapsed_time = 0;
 
 		// It is Assumed that to reach this section of code, system
@@ -455,12 +462,14 @@ static bool verify_nav_wp()
 			time_left = 0;
 			b_4Dflag = true;
 		}
-		
+		mode_change_counter = 20;
 		return true;
 	}
 	// add in a more complex case
 	// Doug to do
-	if(loiter_sum > 300){
+	if(loiter_sum > 300)
+	{
+		mode_change_counter = 20;
 		gcs_send_text_P(SEVERITY_MEDIUM,PSTR("Missed WP"));
 		return true;
 	}
