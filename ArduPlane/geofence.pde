@@ -280,6 +280,7 @@ static void geofence_state_machine(void)
 			}
 			break;
 		case EXITING:
+			skip_wpt = true;
 			geofence_state->prev_mode = control_mode;
 			geofence_state->breach_count++;
 			geofence_state->breach_time = millis();
@@ -292,7 +293,7 @@ static void geofence_state_machine(void)
 				guided_WP.options = 0;
 				guided_WP.lat = geofence_state->boundary[0].x;
 				guided_WP.lng = geofence_state->boundary[0].y;
-				set_mode(GUIDED);
+				//set_mode(GUIDED);
 			}
 			break;
 		case OUTSIDE:
@@ -303,7 +304,7 @@ static void geofence_state_machine(void)
 			}
 			break;
 		case ENTERING:
-			set_mode(geofence_state->prev_mode);
+			//set_mode(geofence_state->prev_mode);
 			geofence_state->pre_state = geofence_state->state;
 			geofence_state->state = INSIDE;
 			break;

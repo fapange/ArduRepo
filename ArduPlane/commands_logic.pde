@@ -433,6 +433,7 @@ static bool verify_nav_wp()
 
 	if ((control_mode == AUTO) && (((wp_distance > 0) && (wp_distance <= WptRadius)) || location_past_point() || skip_wpt)) 
 	{
+		skip_wpt = false;
 		WptRadius = g.waypoint_radius;
 
 		if (b_4DWaypointsEnabled() && b_4Dflag && (nav_command_index>0))
