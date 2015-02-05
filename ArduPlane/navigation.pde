@@ -476,7 +476,9 @@ static long nav_geo_fence()
 	Vector2f geo_yp;
 	const long navSLEW = 2000;
 
-    if (geofence_state == NULL) 
+    skip_wpt = false;
+	
+	if (geofence_state == NULL) 
 		return (0L);
     
 	// Current Location
@@ -521,7 +523,7 @@ static long nav_geo_fence()
 	//aweight = (dot(pnav,-yp)+1.0f)/2.0f;
 	//aweight = 0.0f;
 	//dweight = 1.0f/(1.0f+exp(-0.05f*(150.0f+20.0f*aweight-mdist)));
-	dweight = 1.0f/(1.0f+exp((mdist-80.0f)/20.0f));
+	dweight = 1.0f/(1.0f+exp((mdist-100.0f)/20.0f));
 	mweight = dweight;
 	//Serial.printf_P (PSTR("mdist=%.2f  weight=%.2f\n"),mdist,dweight);
 	//mweight = dweight * (q + (1.0f-q)*aweight);
@@ -565,6 +567,9 @@ static long nav_geo_fence()
 	if (geofence_enabled())
 	{
 		//Serial.printf_P (PSTR("Geo ON"));
+		if (abs(resHeading)>9000)
+			skip_wpt = true;
+		
 		return (resHeading);
 	}
 	else

@@ -431,7 +431,7 @@ static bool verify_nav_wp()
 	WptRadius = constrain(WptRadius,(float)g.waypoint_radius,0.75*(float)(wp_totalDistance-g.waypoint_radius));
 	//WptRadius = constrain(WptRadius,(float)g.waypoint_radius,(float)3*g.waypoint_radius);
 
-	if ((control_mode == AUTO) && (((wp_distance > 0) && (wp_distance <= WptRadius)) || location_past_point())) 
+	if ((control_mode == AUTO) && (((wp_distance > 0) && (wp_distance <= WptRadius)) || location_past_point() || skip_wpt)) 
 	{
 		WptRadius = g.waypoint_radius;
 
