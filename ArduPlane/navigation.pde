@@ -359,9 +359,9 @@ static long nav_geo_fence()
 	long navHeading;
 	static long resHeading = 0;
 	float distm;
-	float mdist;
+	//float mdist;
 	float mweight;
-	float dweight;
+	//float dweight;
 	Vector2f v;
 	Vector2f w;
 	Vector2f p;
@@ -390,7 +390,7 @@ static long nav_geo_fence()
 	nav = Vector2f((float)(cos(ToRad((float)nav_bearing/100.0f))), (float)(sin(ToRad((float)nav_bearing/100.0f))));
 	head = Vector2f((float)(cos(ToRad((float)dcm.yaw_sensor/100.0f))), (float)(sin(ToRad((float)dcm.yaw_sensor/100.0f))));
 	
-	mdist = 1e14f;
+	//mdist = 1e14f;
 	for (i=1,j=i+1; i<geofence_state->num_points-1; j++, i++) 
 	{
 		v = Vector2f((float)geofence_state->boundary[i].x,(float)geofence_state->boundary[i].y)/1e7f;
@@ -413,25 +413,22 @@ static long nav_geo_fence()
 				yp = (p-geoPoint).normalized();		// Vector normal to fence
 				//Serial.printf_P (PSTR("yp_in  <%.2f,%.2f> "),yp.x,yp.y);
 			}
-			if (distm < mdist) mdist = distm;
+			//if (distm < mdist) mdist = distm;
 
-#if 0
-			// Using the vector xp
-			float dotFactor = fabs(dot(nav,xp));
-			float dt = (100.0f*(2.0f-dotFactor));
-#else
 			// Using the vector yp
-			float dotFactor = 0.5f*dot(head,yp);
-			float dt = (100.0f*(1.0f-dotFactor));
-#endif
-			dweight = 1.0f/(1.0f+exp((distm-dt)/20.0f));
-			mweight = dweight;
-			//if (mweight > 0.1) Serial.printf_P (PSTR("[%2.2d] "),segn);
-			//if (mweight > 0.1) Serial.printf_P (PSTR("w=%.2f dt=%.2f  "),mweight,dt);
+			//float dotFactor = 0.2f*dot(head,yp);
+			//float dt = (100.0f*(1.0f-dotFactor));
 
-			//Serial.printf_P (PSTR("mdist=%.2f  weight=%.2f\n"),mdist,dweight);
-			//mweight = dweight * (q + (1.0f-q)*aweight);
-
+			//mweight = 1.0f/(1.0f+exp((distm-dt)/20.0f));
+			mweight = exp(-distm/40.0f);
+			if (mweight > 0.1)
+			{
+				Serial.printf_P (PSTR("[%2.2d] "),segn);
+				Serial.printf_P (PSTR("w=%.2f "),mweight);
+				//Serial.printf_P (PSTR("dt=%.2f "),dt);
+				Serial.printf_P (PSTR("distm=%.2f\n"),distm);
+			}
+			
 			// Correct Nav Bearing due to closeness to the geofence
 			nav_xp = nav.projected(xp)*(1.0f-0.75f*mweight);
 			nav_yp = yp * mweight + nav.projected(yp)*(1.0f-mweight);

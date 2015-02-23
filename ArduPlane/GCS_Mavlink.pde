@@ -1163,7 +1163,7 @@ int mavlink_check_target(int APID, int SOURCEID)
 	}
 	if (APID==0 && SOURCEID==0)
 	{
-		gcs_send_text_fmt(PSTR("AP/NONE Match: [A%d G%d]==[A%d G%d]"),APID, SOURCEID,0,0);
+		//gcs_send_text_fmt(PSTR("AP/NONE Match: [A%d G%d]==[A%d G%d]"),APID, SOURCEID,0,0);
 		return 0;
 	}
 	gcs_send_text_fmt(PSTR("AP Reject: [A%d G%d]!=[A%d G%d]"),APID, SOURCEID,MAV_SYSTEM_ID,MAV_GCS_ID);
