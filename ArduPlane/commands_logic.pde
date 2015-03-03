@@ -462,14 +462,14 @@ static bool verify_nav_wp()
 			time_left = 0;
 			b_4Dflag = true;
 		}
-		mode_change_counter = 20;
+		//mode_change_counter = 20;
 		return true;
 	}
 	// add in a more complex case
 	// Doug to do
 	if(loiter_sum > 300)
 	{
-		mode_change_counter = 20;
+		//mode_change_counter = 20;
 		gcs_send_text_P(SEVERITY_MEDIUM,PSTR("Missed WP"));
 		return true;
 	}

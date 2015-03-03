@@ -366,11 +366,13 @@ static long nav_geo_fence()
 	Vector2f w;
 	Vector2f p;
 	Vector2f wp;
+	Vector2f wp2;
 	Vector2f geoPoint;
 	Vector2f xp,yp;
 	Vector2f geoNav = Vector2f(0, 0);
 	Vector2f nav;
 	Vector2f head;
+	Vector2f nwp2;
 	Vector2f nav_xp;
 	Vector2f nav_yp;
 	const long navSLEW = 2000;
@@ -385,11 +387,13 @@ static long nav_geo_fence()
 	
 	// Waypoint Location
 	wp = Vector2f((float)next_WP.lat,(float)next_WP.lng)/1e7f;
+	wp2 = Vector2f((float)next_WP2.lat,(float)next_WP2.lng)/1e7f;
 	
 	// Nav Heading
 	nav = Vector2f((float)(cos(ToRad((float)nav_bearing/100.0f))), (float)(sin(ToRad((float)nav_bearing/100.0f))));
 	head = Vector2f((float)(cos(ToRad((float)dcm.yaw_sensor/100.0f))), (float)(sin(ToRad((float)dcm.yaw_sensor/100.0f))));
-	
+	nwp2 = (wp2-p).normalized();
+
 	//mdist = 1e14f;
 	for (i=1,j=i+1; i<geofence_state->num_points-1; j++, i++) 
 	{
@@ -420,7 +424,8 @@ static long nav_geo_fence()
 			//float dt = (100.0f*(1.0f-dotFactor));
 
 			//mweight = 1.0f/(1.0f+exp((distm-dt)/20.0f));
-			mweight = exp(-distm/40.0f);
+			//mweight = exp(-distm/40.0f);
+			mweight = exp(-distm/125.0f);
 			if (mweight > 0.1)
 			{
 				Serial.printf_P (PSTR("[%2.2d] "),segn);
@@ -430,12 +435,11 @@ static long nav_geo_fence()
 			}
 			
 			// Correct Nav Bearing due to closeness to the geofence
-			nav_xp = nav.projected(xp)*(1.0f-0.75f*mweight);
-			nav_yp = yp * mweight + nav.projected(yp)*(1.0f-mweight);
-			//Serial.printf_P (PSTR("w=%.2f "),mweight);
-			//if (mweight > 0.2) Serial.printf_P (PSTR("nXp<%.2f,%.2f> "),nav_xp.x,nav_xp.y);
-			//if (mweight > 0.2) Serial.printf_P (PSTR("nYp<%.2f,%.2f> "),nav_yp.x,nav_yp.y);
-			geoNav = ((nav_xp + nav_yp)*mweight + geoNav);
+			//nav_xp = nav.projected(xp)*(1.0f-0.75f*mweight);
+			//nav_yp = yp * mweight + nav.projected(yp)*(1.0f-mweight);
+			nav_xp = nav.projected(xp) * (1.0f-mweight) + nwp2.projected(xp) * (1-mweight)*mweight;
+			nav_yp = nav.projected(yp) * (1.0f-mweight) + yp * mweight;
+			geoNav = ((nav_xp + nav_yp)* mweight + geoNav);
 		}
 	}
 	geoNav.normalize();
@@ -452,18 +456,19 @@ static long nav_geo_fence()
 	//resHeading = wrap_180(geoHeading - navHeading);
 	//Serial.printf_P (PSTR("Geo=%d\n"),resHeading/100);
 
-	if (mode_change_counter > 0) 
-		mode_change_counter = mode_change_counter-1;
+	//if (mode_change_counter > 0) 
+		//mode_change_counter = mode_change_counter-1;
 	
 	if (geofence_enabled())
 	{
 		//Serial.printf_P (PSTR("Geo ON"));
-		if ((mode_change_counter == 0) && (abs(resHeading) > 9000))
-		{
+		//if ((mode_change_counter == 0) && (abs(resHeading) > 9000))
+		//{
 			//Serial.printf_P (PSTR("[%2.2d] "),mode_change_counter);
-			Serial.printf_P (PSTR("Geo=%d\n"),resHeading/100);
+			//Serial.printf_P (PSTR("Geo=%d\n"),resHeading/100);
+			//mode_change_counter = 20;
 			//skip_wpt = true;
-		}
+		//}
 
 		return (resHeading);
 	}

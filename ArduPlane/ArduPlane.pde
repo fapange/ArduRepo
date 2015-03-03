@@ -535,7 +535,7 @@ AP_Mount camera_mount(g_gps, &dcm);
 	static long odometer = 0;
 	static struct 	Location previous_loc;				// current location
 	static bool skip_wpt = false;
-	static long mode_change_counter = 10;
+	//static long mode_change_counter = 10;
 #else
 	#error SLV_ADDED DISABLED.
 #endif
