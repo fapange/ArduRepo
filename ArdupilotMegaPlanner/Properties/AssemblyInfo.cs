@@ -33,6 +33,6 @@ using System.Resources;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.2.0.1")]
-[assembly: AssemblyFileVersion("01.29.2015")]
-[assembly: AssemblyTrademark("GIT: c3526187")]
+[assembly: AssemblyFileVersion("03.03.2015")]
+[assembly: AssemblyTrademark("GIT: 055e388a")]
 [assembly: NeutralResourcesLanguageAttribute("")]

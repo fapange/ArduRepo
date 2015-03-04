@@ -133,7 +133,7 @@ namespace ArdupilotMega
             splash.Show();
 
             string _version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            string _repo = ((System.Reflection.AssemblyTrademarkAttribute)System.Reflection.Assembly.GetExecutingAssembly().GetCustomAttributes(true)[4]).Trademark;
+            string _repo = ((System.Reflection.AssemblyTrademarkAttribute)System.Reflection.Assembly.GetExecutingAssembly().GetCustomAttributes(true)[0]).Trademark;
             string _date = Application.ProductVersion;
             splash.Text = "APM Planner " + _version + " " + _repo + " " + _date + " By Michael Oborne";
 

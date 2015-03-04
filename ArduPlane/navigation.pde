@@ -359,9 +359,7 @@ static long nav_geo_fence()
 	long navHeading;
 	static long resHeading = 0;
 	float distm;
-	//float mdist;
 	float mweight;
-	//float dweight;
 	Vector2f v;
 	Vector2f w;
 	Vector2f p;
@@ -375,6 +373,7 @@ static long nav_geo_fence()
 	Vector2f nwp2;
 	Vector2f nav_xp;
 	Vector2f nav_yp;
+	Vector2f geoVec;
 	const long navSLEW = 2000;
 
     skip_wpt = false;
@@ -395,6 +394,7 @@ static long nav_geo_fence()
 	nwp2 = (wp2-p).normalized();
 
 	//mdist = 1e14f;
+	geoWeight = 0.0f;
 	for (i=1,j=i+1; i<geofence_state->num_points-1; j++, i++) 
 	{
 		v = Vector2f((float)geofence_state->boundary[i].x,(float)geofence_state->boundary[i].y)/1e7f;
@@ -425,34 +425,52 @@ static long nav_geo_fence()
 
 			//mweight = 1.0f/(1.0f+exp((distm-dt)/20.0f));
 			//mweight = exp(-distm/40.0f);
-			mweight = exp(-distm/125.0f);
-			if (mweight > 0.1)
+			//mweight = exp(-distm/100.0f);
+			
+			if		(distm < 20.0f)		mweight = 1.0f;
+			else if (distm > 150.0f)	mweight = 0.0f;
+			else						mweight = (150.0f-distm)/(150.0f-20.0f);
+			
+			if (mweight > geoWeight) 
+			{
+				geoWeight = mweight;
+			}
+
+			/*if (mweight > 0.1)
 			{
 				Serial.printf_P (PSTR("[%2.2d] "),segn);
 				Serial.printf_P (PSTR("w=%.2f "),mweight);
 				//Serial.printf_P (PSTR("dt=%.2f "),dt);
 				Serial.printf_P (PSTR("distm=%.2f\n"),distm);
-			}
+			}*/
 			
 			// Correct Nav Bearing due to closeness to the geofence
 			//nav_xp = nav.projected(xp)*(1.0f-0.75f*mweight);
 			//nav_yp = yp * mweight + nav.projected(yp)*(1.0f-mweight);
 			nav_xp = nav.projected(xp) * (1.0f-mweight) + nwp2.projected(xp) * (1-mweight)*mweight;
 			nav_yp = nav.projected(yp) * (1.0f-mweight) + yp * mweight;
-			geoNav = ((nav_xp + nav_yp)* mweight + geoNav);
+			geoVec = (nav_xp + nav_yp).normalized();
+			geoNav = (geoVec * mweight + geoNav);
 		}
 	}
-	geoNav.normalize();
-	//Serial.printf_P (PSTR("nav<%.2f,%.2f> "),nav.x,nav.y);
-	//Serial.printf_P (PSTR("geo<%.2f,%.2f> "),geoNav.x,geoNav.y);
+	if (geoNav.length() == 0.0f) geoNav = nav;
 
-	geoHeading = (long)get_bearing(&p, &(p+geoNav));
+	geoNav.normalize();
+
+	//Serial.printf_P (PSTR("nav<%.2f,%.2f> "),nav.x,nav.y);
+	//Serial.printf_P (PSTR("normed_geo<%.2f,%.2f> \n"),geoNav.x,geoNav.y);
+
 	navHeading = (long)get_bearing(&p, &(p+nav));
+	geoHeading = (long)get_bearing(&p, &(p+geoNav));
+
 	//Serial.printf_P (PSTR("nav <%.2f,%.2f>  gH=%d nH=%d "),geoNav.x,geoNav.y,geoHeading/100,navHeading/100);
 	//Serial.printf_P (PSTR("gH=%d "),geoHeading/100);
 	//Serial.printf_P (PSTR("nH=%d "),navHeading/100);
-	resHeading += constrain(wrap_180(geoHeading - navHeading - resHeading), -navSLEW, navSLEW);
+	//resHeading += constrain(wrap_180(geoHeading - navHeading - resHeading), -navSLEW, navSLEW);
+
+	resHeading = wrap_180(geoHeading - navHeading);
 	resHeading = wrap_180(resHeading);
+
 	//resHeading = wrap_180(geoHeading - navHeading);
 	//Serial.printf_P (PSTR("Geo=%d\n"),resHeading/100);
 

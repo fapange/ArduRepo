@@ -15,7 +15,8 @@ namespace ArdupilotMega
             InitializeComponent();
 
             TXT_version.Text = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            TXT_repo.Text = ((System.Reflection.AssemblyTrademarkAttribute)System.Reflection.Assembly.GetExecutingAssembly().GetCustomAttributes(true)[4]).Trademark;
+            TXT_repo.Text = ((System.Reflection.AssemblyTrademarkAttribute)System.Reflection.Assembly.GetExecutingAssembly().GetCustomAttributes(true)[0]).Trademark;
+            string junk = System.Reflection.Assembly.GetExecutingAssembly().GetCustomAttributes(true)[0].ToString();
             TXT_date.Text = Application.ProductVersion;
         }
     }

@@ -196,11 +196,12 @@ namespace ArdupilotMega
         float target = -1;
         float nav_bearing = -1;
         float alt = 0;
+        float shield = 0.0f;
 
 #if SLV_ADDED
         bool ownship = false;
         public GMapControl MainMap;
-        public GMapMarkerPlane(PointLatLng p, float heading, float cog, float nav_bearing, float target, GMapControl map)
+        public GMapMarkerPlane(PointLatLng p, float heading, float cog, float nav_bearing, float target, float geoWeight, GMapControl map)
 #else
             public GMapMarkerPlane(PointLatLng p, float heading, float cog, float nav_bearing,float target)
 #endif
@@ -210,6 +211,7 @@ namespace ArdupilotMega
             this.cog = cog;
             this.target = target;
             this.nav_bearing = nav_bearing;
+            this.shield = geoWeight;
             Size = SizeSt;
             ownship = true;
 #if SLV_ADDED
@@ -239,8 +241,8 @@ namespace ArdupilotMega
             double m2pixelheight = MainMap.Height / height;
             int trafBubbleW = (int)(20 * m2pixelwidth);
             int trafBubbleH = (int)(20 * m2pixelheight);
-            int warningBubbleW = (int)(38.1 * m2pixelwidth);
-            int warningBubbleH = (int)(38.1 * m2pixelheight);
+            int warningBubW = (int)(38.1 * m2pixelwidth);
+            int warningBubH = (int)(38.1 * m2pixelheight);
             int distBubbleW = (int)(42 * m2pixelwidth);
             int distBubbleH = (int)(42 * m2pixelheight);
             int relspeedBubbleW = (int)(50 * m2pixelwidth);
@@ -248,6 +250,8 @@ namespace ArdupilotMega
             float length = MainV2.cs.wp_dist * (float)m2pixelwidth;
             //float desired_lead_dist = (MainV2.cs.wp_radius - global::ArdupilotMega.Properties.Resources.planeicon.Height / 2) * (float)m2pixelwidth;
             float desired_lead_dist = 100 * (float)m2pixelwidth;
+            int warningBubbleW = 30;
+            int warningBubbleH = 30;
 
             Matrix temp = g.Transform;
             g.TranslateTransform(LocalPosition.X, LocalPosition.Y);
@@ -297,7 +301,8 @@ namespace ArdupilotMega
                     g.DrawArc(new Pen(Color.HotPink, 2), myXoff - myR, myYoff - myR, 2 * myR, 2 * myR, myH - 180, alpha);
                     
                     // Draw Bands around ownship
-                    g.DrawArc(new Pen(Color.LightGreen, 1), -warningBubbleW, -warningBubbleH, 2*warningBubbleW, 2*warningBubbleH, 0 - 180, 360);
+                    //g.DrawArc(new Pen(Color.LightGreen, 1), -warningBubbleW, -warningBubbleH, 2 * warningBubbleW, 2 * warningBubbleH, 0 - 180, 360);
+                    g.DrawArc(new Pen(Color.LightGreen, (int)(1 + shield * 12)), -warningBubbleW, -warningBubbleH, 2 * warningBubbleW, 2 * warningBubbleH, 0 - 180, 360);
 
                     //g.DrawArc(new Pen(Color.LightGreen, 1), -3 * Size.Width / 4, -3 * Size.Width / 4, 2 * 3 * Size.Width / 4, 2 * 3 * Size.Width / 4, 0 - 180, 360);
                     //g.DrawArc(new Pen(Color.Green, 1), -Size.Width, -Size.Width, 2 * Size.Width, 2 * Size.Width, 0 - 180, 360);

@@ -205,7 +205,7 @@
 #define ANALOG_EU_12        (accel_max.z)
 #define ANALOG_EU_13        (target_cruisethrottle)
 #define ANALOG_EU_14        (float)odometer
-#define ANALOG_EU_15        (float)(ac_ch[12])
+#define ANALOG_EU_15        (float)geoWeight
 #define ANALOG_EU_16        (float)(ac_ch[13])
 
 #define THROTTLE_GAIN	  3.0200f

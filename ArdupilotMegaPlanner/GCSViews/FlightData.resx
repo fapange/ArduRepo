@@ -201,7 +201,7 @@
     <value>5, 5, 5, 5</value>
   </data>
   <data name="hud1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>606, 183</value>
+    <value>605, 183</value>
   </data>
   <assembly alias="mscorlib" name="mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="hud1.TabIndex" type="System.Int32, mscorlib">
@@ -785,7 +785,7 @@ Action</value>
     <value>4, 4, 4, 4</value>
   </data>
   <data name="tabActions.Size" type="System.Drawing.Size, System.Drawing">
-    <value>598, 337</value>
+    <value>597, 337</value>
   </data>
   <data name="tabActions.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -1202,7 +1202,7 @@ Action</value>
     <value>4, 4, 4, 4</value>
   </data>
   <data name="tabGauges.Size" type="System.Drawing.Size, System.Drawing">
-    <value>598, 337</value>
+    <value>597, 337</value>
   </data>
   <data name="tabGauges.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -1235,7 +1235,7 @@ Action</value>
     <value>4, 4, 4, 4</value>
   </data>
   <data name="tabStatus.Size" type="System.Drawing.Size, System.Drawing">
-    <value>599, 337</value>
+    <value>597, 337</value>
   </data>
   <data name="tabStatus.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -1433,7 +1433,7 @@ Action</value>
     <value>4, 4, 4, 4</value>
   </data>
   <data name="tabTLogs.Size" type="System.Drawing.Size, System.Drawing">
-    <value>599, 337</value>
+    <value>597, 337</value>
   </data>
   <data name="tabTLogs.TabIndex" type="System.Int32, mscorlib">
     <value>3</value>
@@ -1715,7 +1715,7 @@ Action</value>
     <value>4, 4, 4, 4</value>
   </data>
   <data name="tabCDnR.Size" type="System.Drawing.Size, System.Drawing">
-    <value>599, 337</value>
+    <value>597, 337</value>
   </data>
   <data name="tabCDnR.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
@@ -1862,7 +1862,7 @@ Action</value>
     <value>4, 34</value>
   </data>
   <data name="tabPage1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>599, 337</value>
+    <value>597, 337</value>
   </data>
   <data name="tabPage1.TabIndex" type="System.Int32, mscorlib">
     <value>5</value>
@@ -1898,7 +1898,7 @@ Action</value>
     <value>0, 0</value>
   </data>
   <data name="Tabs.Size" type="System.Drawing.Size, System.Drawing">
-    <value>606, 375</value>
+    <value>605, 375</value>
   </data>
   <data name="Tabs.TabIndex" type="System.Int32, mscorlib">
     <value>84</value>
@@ -1931,7 +1931,7 @@ Action</value>
     <value>50</value>
   </data>
   <data name="SubMainLeft.Size" type="System.Drawing.Size, System.Drawing">
-    <value>608, 567</value>
+    <value>607, 567</value>
   </data>
   <data name="SubMainLeft.SplitterDistance" type="System.Int32, mscorlib">
     <value>185</value>
@@ -1997,7 +1997,7 @@ Action</value>
     <value>5, 5, 5, 5</value>
   </data>
   <data name="zg1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>719, 168</value>
+    <value>719, 210</value>
   </data>
   <data name="zg1.TabIndex" type="System.Int32, mscorlib">
     <value>67</value>
@@ -2105,7 +2105,7 @@ Action</value>
     <value>0, 0, 0, 0</value>
   </data>
   <data name="gMapControl1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>719, 517</value>
+    <value>720, 517</value>
   </data>
   <data name="gMapControl1.streamjpg" mimetype="application/x-microsoft.net.object.binary.base64">
     <value>
@@ -2281,7 +2281,7 @@ Action</value>
     <value>1</value>
   </data>
   <data name="splitContainer1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>719, 517</value>
+    <value>720, 517</value>
   </data>
   <data name="splitContainer1.SplitterDistance" type="System.Int32, mscorlib">
     <value>210</value>
@@ -2554,7 +2554,7 @@ Action</value>
     <value>0, 0, 0, 0</value>
   </data>
   <data name="panel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>727, 37</value>
+    <value>728, 37</value>
   </data>
   <data name="panel1.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -2584,7 +2584,7 @@ Action</value>
     <value>2</value>
   </data>
   <data name="tableMap.Size" type="System.Drawing.Size, System.Drawing">
-    <value>729, 565</value>
+    <value>730, 565</value>
   </data>
   <data name="tableMap.TabIndex" type="System.Int32, mscorlib">
     <value>75</value>
@@ -2620,7 +2620,7 @@ Action</value>
     <value>1344, 567</value>
   </data>
   <data name="MainH.SplitterDistance" type="System.Int32, mscorlib">
-    <value>608</value>
+    <value>607</value>
   </data>
   <data name="MainH.SplitterWidth" type="System.Int32, mscorlib">
     <value>5</value>
