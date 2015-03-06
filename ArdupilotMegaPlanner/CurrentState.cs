@@ -312,6 +312,7 @@ namespace ArdupilotMega
         public float a20vV { get; set; }
         public float a40vV { get; set; }
         public float geoWeight { get; set; }
+        public float geoHeading { get; set; }
 #else
         // HIL
         public int hilch1 { get; set; }
@@ -1138,9 +1139,10 @@ namespace ArdupilotMega
                             aRPM = 0.0f;   // *6.976536f - 42.398147f;
                             fRPM = aRPM;        // *6.976536f - 42.398147f;
                             geoWeight = ac.chan15;
+                            geoHeading = ac.chan16;
                             //ArdupilotMega.GCSViews.FlightData.Gheading.RangesInnerRadius[0] = 20;
                             //fwdCurr = ac.chan15 * 0.1230f - 2.2160f;
-                            aftCurr = ac.chan16 * 0.1239f - 1.8688f;
+                            //aftCurr = ac.chan16 * 0.1239f - 1.8688f;
                             usec = ac.usec;
                             tripTimer += (double)(DateTime.Now - odoupdate).Milliseconds/1000;
                             odoupdate = DateTime.Now;

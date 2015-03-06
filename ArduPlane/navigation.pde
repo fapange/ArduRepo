@@ -351,11 +351,12 @@ static long nav_crosstrack()
 	return (constrain(100*g.pidTeThrottle.get_pid(crosstrack_error,delta_ms_fast_loop),0,4500));
 }
 
+#define lowD	50.0f
+#define highD	200.0f
 static long nav_geo_fence()
 {
     uint8_t i,j;
 	int segn=0;
-	long geoHeading;
 	long navHeading;
 	static long resHeading = 0;
 	float distm;
@@ -427,29 +428,35 @@ static long nav_geo_fence()
 			//mweight = exp(-distm/40.0f);
 			//mweight = exp(-distm/100.0f);
 			
-			if		(distm < 20.0f)		mweight = 1.0f;
-			else if (distm > 150.0f)	mweight = 0.0f;
-			else						mweight = (150.0f-distm)/(150.0f-20.0f);
+			if		(distm < lowD)	mweight = 1.0f;
+			else if (distm > highD)	mweight = 0.0f;
+			else					mweight = (highD-distm)/(highD-lowD);
 			
 			if (mweight > geoWeight) 
 			{
 				geoWeight = mweight;
 			}
 
-			/*if (mweight > 0.1)
+			if (mweight > 0.1)
 			{
 				Serial.printf_P (PSTR("[%2.2d] "),segn);
 				Serial.printf_P (PSTR("w=%.2f "),mweight);
 				//Serial.printf_P (PSTR("dt=%.2f "),dt);
 				Serial.printf_P (PSTR("distm=%.2f\n"),distm);
-			}*/
+			}
 			
 			// Correct Nav Bearing due to closeness to the geofence
 			//nav_xp = nav.projected(xp)*(1.0f-0.75f*mweight);
 			//nav_yp = yp * mweight + nav.projected(yp)*(1.0f-mweight);
-			nav_xp = nav.projected(xp) * (1.0f-mweight) + nwp2.projected(xp) * (1-mweight)*mweight;
+
+			/*nav_xp = nav.projected(xp) * (1.0f-mweight) + nwp2.projected(xp) * (1-mweight)*mweight;
 			nav_yp = nav.projected(yp) * (1.0f-mweight) + yp * mweight;
+			geoVec = (nav_xp + nav_yp).normalized();*/
+
+			nav_xp = nav.projected(xp) * (1.0f-mweight) + nwp2.projected(xp) * (1-mweight)*mweight;
+			nav_yp = yp * mweight;
 			geoVec = (nav_xp + nav_yp).normalized();
+
 			geoNav = (geoVec * mweight + geoNav);
 		}
 	}

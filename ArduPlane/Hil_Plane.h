@@ -206,7 +206,8 @@
 #define ANALOG_EU_13        (target_cruisethrottle)
 #define ANALOG_EU_14        (float)odometer
 #define ANALOG_EU_15        (float)geoWeight
-#define ANALOG_EU_16        (float)(ac_ch[13])
+#define ANALOG_EU_16        (float)geoHeading
+
 
 #define THROTTLE_GAIN	  3.0200f
 #define THROTTLE_OFFSET -28.4317f

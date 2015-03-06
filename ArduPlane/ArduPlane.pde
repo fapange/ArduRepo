@@ -536,6 +536,7 @@ AP_Mount camera_mount(g_gps, &dcm);
 	static struct 	Location previous_loc;				// current location
 	static bool skip_wpt = false;
 	static float geoWeight;
+	static long geoHeading;
 #else
 	#error SLV_ADDED DISABLED.
 #endif

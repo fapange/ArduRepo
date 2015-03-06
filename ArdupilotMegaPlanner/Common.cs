@@ -197,11 +197,12 @@ namespace ArdupilotMega
         float nav_bearing = -1;
         float alt = 0;
         float shield = 0.0f;
+        float geoHeading = 0.0f;
 
 #if SLV_ADDED
         bool ownship = false;
         public GMapControl MainMap;
-        public GMapMarkerPlane(PointLatLng p, float heading, float cog, float nav_bearing, float target, float geoWeight, GMapControl map)
+        public GMapMarkerPlane(PointLatLng p, float heading, float cog, float nav_bearing, float target, float geoWeight, float geoHeading, GMapControl map)
 #else
             public GMapMarkerPlane(PointLatLng p, float heading, float cog, float nav_bearing,float target)
 #endif
@@ -212,6 +213,7 @@ namespace ArdupilotMega
             this.target = target;
             this.nav_bearing = nav_bearing;
             this.shield = geoWeight;
+            this.geoHeading = geoHeading/(float)1e2;
             Size = SizeSt;
             ownship = true;
 #if SLV_ADDED
@@ -270,6 +272,7 @@ namespace ArdupilotMega
                 g.DrawLine(new Pen(Color.Black, 2), 0.0f, 0.0f, (float)Math.Cos((cog - 90) * deg2rad) * length, (float)Math.Sin((cog - 90) * deg2rad) * length);
                 g.DrawLine(new Pen(Color.Green, 4), 0.0f, 0.0f, (float)Math.Cos((nav_bearing - 90) * deg2rad) * length, (float)Math.Sin((nav_bearing - 90) * deg2rad) * length);
                 g.DrawLine(new Pen(Color.Orange, 2), 0.0f, 0.0f, (float)Math.Cos((target - 90) * deg2rad) * length, (float)Math.Sin((target - 90) * deg2rad) * length);
+                g.DrawLine(new Pen(Color.Purple, 2), 0.0f, 0.0f, (float)Math.Cos((geoHeading - 90) * deg2rad) * length, (float)Math.Sin((geoHeading - 90) * deg2rad) * length);
             }
 
             try

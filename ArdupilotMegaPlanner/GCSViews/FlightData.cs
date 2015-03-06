@@ -616,7 +616,7 @@ namespace ArdupilotMega.GCSViews
                                         routes.Markers.Add(new GMapMarkerPlane(otherloc, MainV2.trafficTable[i].Alt, MainV2.trafficTable[i].Heading, gMapControl1) { ToolTipText = MainV2.trafficTable[i].ID, ToolTipMode = MarkerTooltipMode.Always });
                                     }
 #endif
-                                    routes.Markers.Add(new GMapMarkerPlane(currentloc, MainV2.cs.yaw, MainV2.cs.groundcourse, MainV2.cs.nav_bearing, MainV2.cs.target_bearing, MainV2.cs.geoWeight, gMapControl1) { ToolTipText = MainV2.cs.alt.ToString("0"), ToolTipMode = MarkerTooltipMode.Always });
+                                    routes.Markers.Add(new GMapMarkerPlane(currentloc, MainV2.cs.yaw, MainV2.cs.groundcourse, MainV2.cs.nav_bearing, MainV2.cs.target_bearing, MainV2.cs.geoWeight, MainV2.cs.geoHeading, gMapControl1) { ToolTipText = MainV2.cs.alt.ToString("0"), ToolTipMode = MarkerTooltipMode.Always });
 #else
                                     routes.Markers.Add(new GMapMarkerPlane(currentloc, MainV2.cs.yaw, MainV2.cs.groundcourse, MainV2.cs.nav_bearing, MainV2.cs.target_bearing));
 #endif
