@@ -235,6 +235,17 @@ static long wrap_180(long error)
 	return error;
 }
 
+static long sign_180(long error)
+{
+	if (error < 0) return  -1;
+	return 1;
+}
+static long comp_360(long error)
+{
+	if (error < 0) return  (error+36000);
+	return (error-36000);
+}
+
 	static void update_loiter()
 	{
 		float power;
@@ -352,15 +363,18 @@ static long nav_crosstrack()
 }
 
 #define lowD	50.0f
-#define highD	200.0f
+#define highD	150.0f
 static long nav_geo_fence()
 {
     uint8_t i,j;
 	int segn=0;
+	long cHeading;
+	long gHeading;
 	long navHeading;
 	static long resHeading = 0;
 	float distm;
 	float mweight;
+	float gvweight;
 	Vector2f v;
 	Vector2f w;
 	Vector2f p;
@@ -371,6 +385,7 @@ static long nav_geo_fence()
 	Vector2f geoNav = Vector2f(0, 0);
 	Vector2f nav;
 	Vector2f head;
+	Vector2f gnd;
 	Vector2f nwp2;
 	Vector2f nav_xp;
 	Vector2f nav_yp;
@@ -392,6 +407,7 @@ static long nav_geo_fence()
 	// Nav Heading
 	nav = Vector2f((float)(cos(ToRad((float)nav_bearing/100.0f))), (float)(sin(ToRad((float)nav_bearing/100.0f))));
 	head = Vector2f((float)(cos(ToRad((float)dcm.yaw_sensor/100.0f))), (float)(sin(ToRad((float)dcm.yaw_sensor/100.0f))));
+	gnd = Vector2f((float)(cos(ToRad((float)g_gps->ground_course/100.0f))), (float)(sin(ToRad((float)g_gps->ground_course/100.0f))));
 	nwp2 = (wp2-p).normalized();
 
 	//mdist = 1e14f;
@@ -436,37 +452,42 @@ static long nav_geo_fence()
 			{
 				geoWeight = mweight;
 			}
-
-			if (mweight > 0.1)
+			
+			/*
+			if (mweight > 0.01)
 			{
 				Serial.printf_P (PSTR("[%2.2d] "),segn);
 				Serial.printf_P (PSTR("w=%.2f "),mweight);
 				//Serial.printf_P (PSTR("dt=%.2f "),dt);
 				Serial.printf_P (PSTR("distm=%.2f\n"),distm);
 			}
+			*/
 			
 			// Correct Nav Bearing due to closeness to the geofence
 			//nav_xp = nav.projected(xp)*(1.0f-0.75f*mweight);
 			//nav_yp = yp * mweight + nav.projected(yp)*(1.0f-mweight);
 
-			/*nav_xp = nav.projected(xp) * (1.0f-mweight) + nwp2.projected(xp) * (1-mweight)*mweight;
+			/*
+			nav_xp = nav.projected(xp) * (1.0f-mweight) + nwp2.projected(xp) * (1-mweight)*mweight;
 			nav_yp = nav.projected(yp) * (1.0f-mweight) + yp * mweight;
-			geoVec = (nav_xp + nav_yp).normalized();*/
+			geoVec = (nav_xp + nav_yp).normalized();
+			*/
 
 			nav_xp = nav.projected(xp) * (1.0f-mweight) + nwp2.projected(xp) * (1-mweight)*mweight;
 			nav_yp = yp * mweight;
-			geoVec = (nav_xp + nav_yp).normalized();
+			geoVec = nav_yp;
 
-			geoNav = (geoVec * mweight + geoNav);
+			geoNav = (geoVec + geoNav);
 		}
 	}
-	if (geoNav.length() == 0.0f) geoNav = nav;
 
-	geoNav.normalize();
+	if (geoNav.length() == 0.0f) geoNav = nav;
+	else						 geoNav.normalize();
 
 	//Serial.printf_P (PSTR("nav<%.2f,%.2f> "),nav.x,nav.y);
 	//Serial.printf_P (PSTR("normed_geo<%.2f,%.2f> \n"),geoNav.x,geoNav.y);
 
+	cHeading   = (long)get_bearing(&p, &(p+head));
 	navHeading = (long)get_bearing(&p, &(p+nav));
 	geoHeading = (long)get_bearing(&p, &(p+geoNav));
 
@@ -475,8 +496,38 @@ static long nav_geo_fence()
 	//Serial.printf_P (PSTR("nH=%d "),navHeading/100);
 	//resHeading += constrain(wrap_180(geoHeading - navHeading - resHeading), -navSLEW, navSLEW);
 
-	resHeading = wrap_180(geoHeading - navHeading);
-	resHeading = wrap_180(resHeading);
+	//Serial.printf_P (PSTR("gH=%d "),geoHeading/100);
+	//Serial.printf_P (PSTR("nH=%d "),navHeading/100);
+	long gmc = wrap_180(geoHeading - cHeading);
+	long gmn = wrap_180(geoHeading - navHeading);
+	
+	resHeading = gmn;
+	Serial.printf_P (PSTR(" Geo=%d "),resHeading/100);
+	
+	/*
+	if (sign_180(gmc) == sign_180(gmn))
+	{
+		resHeading = gmn;
+		Serial.printf_P (PSTR(" Geo=%d "),resHeading/100);
+	}
+	else
+	{
+		resHeading = comp_360(gmn);
+		Serial.printf_P (PSTR("*Geo=%d "),resHeading/100);
+	}
+	*/
+	gvweight = -dot(gnd, geoNav);
+	if (gvweight < 0.25f) gvweight = 0.25f;
+	resHeading = (long)(gvweight*geoWeight*(float)resHeading);
+	Serial.printf_P (PSTR("gndw=%.2f  "),gvweight);
+	Serial.printf_P (PSTR("geow=%.2f  "),geoWeight);
+	Serial.printf_P (PSTR("weight=%.2f  "),gvweight*geoWeight);
+	Serial.printf_P (PSTR("wGeo=%d\n"),resHeading/100);
+	
+	//geoHeading = wrap_360(navHeading + resHeading);
+	geoHeading = wrap_360(resHeading);
+
+	//resHeading = wrap_180(resHeading);
 
 	//resHeading = wrap_180(geoHeading - navHeading);
 	//Serial.printf_P (PSTR("Geo=%d\n"),resHeading/100);

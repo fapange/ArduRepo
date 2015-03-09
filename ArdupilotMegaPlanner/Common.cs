@@ -269,10 +269,15 @@ namespace ArdupilotMega
 #if SLV_ADDED
             if (ownship)
             {
+                /*
                 g.DrawLine(new Pen(Color.Black, 2), 0.0f, 0.0f, (float)Math.Cos((cog - 90) * deg2rad) * length, (float)Math.Sin((cog - 90) * deg2rad) * length);
                 g.DrawLine(new Pen(Color.Green, 4), 0.0f, 0.0f, (float)Math.Cos((nav_bearing - 90) * deg2rad) * length, (float)Math.Sin((nav_bearing - 90) * deg2rad) * length);
                 g.DrawLine(new Pen(Color.Orange, 2), 0.0f, 0.0f, (float)Math.Cos((target - 90) * deg2rad) * length, (float)Math.Sin((target - 90) * deg2rad) * length);
-                g.DrawLine(new Pen(Color.Purple, 2), 0.0f, 0.0f, (float)Math.Cos((geoHeading - 90) * deg2rad) * length, (float)Math.Sin((geoHeading - 90) * deg2rad) * length);
+                */
+                g.DrawLine(new Pen(Color.Black, 2), 0.0f, 0.0f, (float)Math.Cos((cog - 90) * deg2rad) * length, (float)Math.Sin((cog - 90) * deg2rad) * length);
+                g.DrawLine(new Pen(Color.LightGreen, 2), 0.0f, 0.0f, (float)Math.Cos((nav_bearing - geoHeading - 90) * deg2rad) * length, (float)Math.Sin((nav_bearing - geoHeading - 90) * deg2rad) * length);
+                g.DrawLine(new Pen(Color.Green, 4), 0.0f, 0.0f, (float)Math.Cos((nav_bearing - 90) * deg2rad) * length, (float)Math.Sin((nav_bearing - 90) * deg2rad) * length);
+                g.DrawLine(new Pen(Color.Orange, 2), 0.0f, 0.0f, (float)Math.Cos((target - 90) * deg2rad) * length, (float)Math.Sin((target - 90) * deg2rad) * length);
             }
 
             try

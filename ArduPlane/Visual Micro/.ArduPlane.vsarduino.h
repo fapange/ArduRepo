@@ -208,6 +208,8 @@ static void calc_bearing_error();
 static void calc_altitude_error();
 static long wrap_360(long error);
 static long wrap_180(long error);
+static long sign_180(long error);
+static long comp_360(long error);
 static void update_loiter();
 static void dowindcalc();
 static void update_crosstrack(void);
