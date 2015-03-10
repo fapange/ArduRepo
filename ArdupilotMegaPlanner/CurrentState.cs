@@ -1162,8 +1162,10 @@ namespace ArdupilotMega
                             break;
                         case SLV_N802RE:
                         case SLV_N803RE:
-                            MUX = ac.chan01;
-                            RC_state = (byte)ac.chan02;
+                            aRPM = ac.chan01 * (8.040868f);
+                            fRPM = aRPM;
+                            MUX = ac.chan02;
+                            RC_state = 1;
                             wind_dir = ac.chan03;
                             wind_vel = ac.chan04;
                             wp_radius = ac.chan05;
@@ -1176,10 +1178,10 @@ namespace ArdupilotMega
                             azmax_g = ac.chan12;
                             mycruisethrottle = ac.chan13;
                             odometer = ac.chan14;   // *6.976536f - 42.398147f;
-                            aRPM = 0.0f;   // *6.976536f - 42.398147f;
-                            fRPM = aRPM;        // *6.976536f - 42.398147f;
-                            fwdCurr = ac.chan15 * 0.1230f - 2.2160f;
-                            aftCurr = ac.chan16 * 0.1239f - 1.8688f;
+                            geoWeight = ac.chan15;
+                            geoHeading = ac.chan16;
+                            //fwdCurr = ac.chan15 * 0.1230f - 2.2160f;
+                            //aftCurr = ac.chan16 * 0.1239f - 1.8688f;
                             usec = ac.usec;
                             tripTimer += (double)(DateTime.Now - odoupdate).Milliseconds/1000;
                             odoupdate = DateTime.Now;

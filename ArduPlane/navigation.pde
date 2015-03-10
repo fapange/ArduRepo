@@ -364,6 +364,9 @@ static long nav_crosstrack()
 
 #define lowD	50.0f
 #define highD	200.0f
+#define refSpeed 2250.0f
+
+#define minhLim ((highD-lowD)/2.0f + lowD)
 static long nav_geo_fence()
 {
     uint8_t i,j;
@@ -374,7 +377,8 @@ static long nav_geo_fence()
 	float d_weight;
 	float v_weight;
 	float s_weight;
-	float v_ratio;	
+	float v_ratio;
+	float hLim;
 	Vector2f v;
 	Vector2f w;
 	Vector2f p;
@@ -403,7 +407,7 @@ static long nav_geo_fence()
 	geoWeight = 0.0f;
 
 	//v_ratio = ((float)g_gps->ground_speed/(float)g.flybywire_airspeed_max)/100.0f;
-	v_ratio = (float)g_gps->ground_speed/2500.0f;
+	v_ratio = (float)g_gps->ground_speed/refSpeed;
 	//Serial.printf_P (PSTR("v_r=%.2f "),v_ratio);
 
 	for (i=1,j=i+1; i<geofence_state->num_points-1; j++, i++) 
@@ -427,12 +431,16 @@ static long nav_geo_fence()
 				//Serial.printf_P (PSTR("yp_in  <%.2f,%.2f> "),yp.x,yp.y);
 			}
 			
-			if		(distm < lowD)	d_weight = 1.0f;
-			else if (distm > highD)	d_weight = 0.0f;
-			else					d_weight = (highD-distm)/(highD-lowD);
-			
 			v_weight = -dot(gnd*v_ratio, yp);
 			if (v_weight < 0.1f) v_weight = 0.1f;
+
+			hLim = highD*v_weight;
+			if (hLim < minhLim) hLim = minhLim;
+
+			if		(distm < lowD)	d_weight = 1.0f;
+			else if (distm > hLim)	d_weight = 0.0f;
+			else					d_weight = (hLim-distm)/(hLim-lowD);
+			
 			s_weight = d_weight * (v_weight + 0.25f*d_weight);
 			if (segn == 1)
 			{

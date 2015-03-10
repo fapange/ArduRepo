@@ -339,7 +339,9 @@
     <Compile Include="Controls\MyButton.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Common.cs" />
+    <Compile Include="Common.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="ArduinoComms.cs" />
     <Compile Include="Controls\MyLabel.cs">
       <SubType>Component</SubType>
