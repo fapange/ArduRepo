@@ -364,9 +364,9 @@ static long nav_crosstrack()
 
 #define lowD	50.0f
 #define highD	200.0f
-#define refSpeed 2250.0f
+#define refSpeed 3000.0f
+//#define minhLim ((highD-lowD)/2.0f + lowD)
 
-#define minhLim ((highD-lowD)/2.0f + lowD)
 static long nav_geo_fence()
 {
     uint8_t i,j;
@@ -379,6 +379,7 @@ static long nav_geo_fence()
 	float s_weight;
 	float v_ratio;
 	float hLim;
+	float lLim;
 	Vector2f v;
 	Vector2f w;
 	Vector2f p;
@@ -408,6 +409,7 @@ static long nav_geo_fence()
 
 	//v_ratio = ((float)g_gps->ground_speed/(float)g.flybywire_airspeed_max)/100.0f;
 	v_ratio = (float)g_gps->ground_speed/refSpeed;
+
 	//Serial.printf_P (PSTR("v_r=%.2f "),v_ratio);
 
 	for (i=1,j=i+1; i<geofence_state->num_points-1; j++, i++) 
@@ -420,55 +422,58 @@ static long nav_geo_fence()
 		if (distm > 0)
 		{
 			segn = i;
-			if (geofence_state->state == OUTSIDE)
-			{
-				yp = (geoPoint-p).normalized();		// Vector normal to fence
-				//Serial.printf_P (PSTR("yp_out <%.2f,%.2f> "),yp.x,yp.y);
-			}
-			else
-			{
-				yp = (p-geoPoint).normalized();		// Vector normal to fence
-				//Serial.printf_P (PSTR("yp_in  <%.2f,%.2f> "),yp.x,yp.y);
-			}
+			if (geofence_state->state == OUTSIDE)	yp = (geoPoint-p).normalized();	// Normal vector from airplane to fence 
+			else									yp = (p-geoPoint).normalized();	// Normal vector from fence to airplane
 			
-			v_weight = -dot(gnd*v_ratio, yp);
-			if (v_weight < 0.1f) v_weight = 0.1f;
+			v_weight = v_ratio * (-dot(gnd, yp));
+			if (v_weight < 0.10f) v_weight = 0.10f;
 
-			hLim = highD*v_weight;
-			if (hLim < minhLim) hLim = minhLim;
+			float sfactor = (1.0f + 0.5f*v_weight);
+			hLim = highD * sfactor;
+			lLim = lowD  * sfactor;
+			//Serial.printf_P (PSTR("hL=%.2f "),hLim);
+			//if (hLim < minhLim) hLim = minhLim;
 
-			if		(distm < lowD)	d_weight = 1.0f;
+			if		(distm < lLim)	d_weight = 1.0f;
 			else if (distm > hLim)	d_weight = 0.0f;
-			else					d_weight = (hLim-distm)/(hLim-lowD);
+			else					d_weight = (hLim-distm)/(hLim-lLim);
 			
-			s_weight = d_weight * (v_weight + 0.25f*d_weight);
-			if (segn == 1)
+			s_weight = d_weight * v_weight;
+//			if (s_weight > 1.0f) s_weight = 1.0f;
+//			else if (s_weight < -1.0f) s_weight = -1.0f;
+
+			//s_weight = (d_weight + v_weight);
+			//s_weight = pow(Vector2f(d_weight,d_weight*v_weight).length_squared(),2);
+
+			//if (segn == 1)
 			{
-				Serial.printf_P (PSTR("d=%03.0f "),distm);
-				Serial.printf_P (PSTR("dw=%.2f "),d_weight);
-				Serial.printf_P (PSTR("vw=%.2f "),v_weight);
-				Serial.printf_P (PSTR("sw=%.2f "),s_weight);
+				//Serial.printf_P (PSTR("%03.0f "),distm);
+				Serial.printf_P (PSTR("%d"),segn);
+				Serial.printf_P (PSTR("[%.1f "),d_weight);
+				Serial.printf_P (PSTR("%.1f "),v_weight);
+				Serial.printf_P (PSTR("%.1f] "),s_weight);
 			}
 
 			geoNav = (yp * s_weight + geoNav);
-			geoWeight += pow(s_weight,2);
 		}
 	}
-	geoWeight = sqrt(geoWeight);
-	if (geoWeight > 1.0f) geoWeight = 1.0f;
-	//Serial.printf_P (PSTR("w=%.2f "),geoWeight);
 
-	if (geoNav.length() == 0.0f) 
+	geoWeight = geoNav.length();
+	if (geoWeight > 1.0f) geoWeight = 1.0f;
+
+	if (geoWeight == 0.0f) 
 	{
-		Serial.printf_P (PSTR(" nav\n"));
+		Serial.printf_P (PSTR(" "));
 		geoNav = nav;
 	}
 	else
 	{
-		Serial.printf_P (PSTR(" \n"));
+		Serial.printf_P (PSTR("*"));
 		geoNav.normalize();
 		geoNav = geoNav * geoWeight + nav * (1.0f - geoWeight);
 	}
+	Serial.printf_P (PSTR(" %.2f"),geoWeight);
+	Serial.printf_P (PSTR("\n"));
 
 	navHeading = (long)get_bearing(&p, &(p+nav));
 	geoHeading = (long)get_bearing(&p, &(p+geoNav));
