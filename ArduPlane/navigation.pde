@@ -398,37 +398,48 @@ static long nav_geo_fence()
 	// Current Location
 	p = Vector2f((float)current_loc.lat,(float)current_loc.lng)/1e7f;
 	
-	// Waypoint Location
+	// Waypoint Location vector
 	wp = Vector2f((float)next_WP.lat,(float)next_WP.lng)/1e7f;
-	
-	// Nav Heading
+	// Nav Heading vector
 	nav  = Vector2f((float)(cos(ToRad((float)nav_bearing/100.0f))), (float)(sin(ToRad((float)nav_bearing/100.0f))));
+	// Ground track vector
 	gnd  = Vector2f((float)(cos(ToRad((float)g_gps->ground_course/100.0f))), (float)(sin(ToRad((float)g_gps->ground_course/100.0f))));
 
-	geoWeight = 0.0f;
-
+	// gain based on the ground speed magnitude
 	//v_ratio = ((float)g_gps->ground_speed/(float)g.flybywire_airspeed_max)/100.0f;
 	v_ratio = (float)g_gps->ground_speed/refSpeed;
 
 	//Serial.printf_P (PSTR("v_r=%.2f "),v_ratio);
 
+	// Cycle through fence segments and find their contribution towards geoContainment
 	for (i=1,j=i+1; i<geofence_state->num_points-1; j++, i++) 
 	{
 		v = Vector2f((float)geofence_state->boundary[i].x,(float)geofence_state->boundary[i].y)/1e7f;
 		w = Vector2f((float)geofence_state->boundary[j].x,(float)geofence_state->boundary[j].y)/1e7f;
+		// defines point in segment closest to airplane
 		geoPoint = find_closest_point(v, w, p);
 		distm = get_distance(&p,&geoPoint);
-		//Serial.printf_P (PSTR("geo <%.2f,%.2f> %.2f\n"),geoPoint.x,geoPoint.y,distm);
+		// consider the segment only if point lies inside the segment
 		if (distm > 0)
 		{
+			// point lies inside segment
 			segn = i;
 			if (geofence_state->state == OUTSIDE)	yp = (geoPoint-p).normalized();	// Normal vector from airplane to fence 
 			else									yp = (p-geoPoint).normalized();	// Normal vector from fence to airplane
 			
-			v_weight = v_ratio * (-dot(gnd, yp));
-			if (v_weight < 0.10f) v_weight = 0.10f;
+			// gain based on the direction of ground track relative to fence segment
+			// +v_ratio if moving toward fence segment,
+			//    0     if moving parallel to fence segment,
+			// -v_ratio if moving away from fence segment
+			v_weight = -dot(gnd, yp);
+			// limit gain to [0.1 v_ratio]
+			if (v_weight < 0.15f) v_weight = 0.15f;
 
-			float sfactor = (1.0f + 0.5f*v_weight);
+			// adjustment to distance thresholds based on the velocity gain
+			// the faster the approach of the airplane, and the more perpendicular
+			// the approach to the segment, the farthest away that the distance 
+			// gain starts acting, 
+			float sfactor = (1.0f + 0.5f*v_weight*v_ratio);
 			hLim = highD * sfactor;
 			lLim = lowD  * sfactor;
 			//Serial.printf_P (PSTR("hL=%.2f "),hLim);
@@ -459,11 +470,14 @@ static long nav_geo_fence()
 	}
 
 	geoWeight = geoNav.length();
-	if (geoWeight > 1.0f) geoWeight = 1.0f;
-
-	if (geoWeight == 0.0f) 
+	if (geoWeight > 1.0f)
 	{
-		Serial.printf_P (PSTR(" "));
+		Serial.printf_P (PSTR(">"));
+		geoWeight = 1.0f;
+	}
+	else if (geoWeight == 0.0f) 
+	{
+		Serial.printf_P (PSTR("0"));
 		geoNav = nav;
 	}
 	else
