@@ -4,6 +4,9 @@
 // Function that controls aileron/rudder, elevator, rudder (if 4 channel control) and throttle to produce desired attitude and airspeed.
 //****************************************************************
 
+// If below 5 meters altitude, use rudder to steer airplane
+#define RUDDER2STEER_ALT_THRESHOLD		500
+
 static void stabilize()
 {
 	float ch1_inf = 1.0;
@@ -150,7 +153,10 @@ static void calc_nav_yaw(float speed_scaler)
 		// Control is a feedforward from the aileron control + a PID to coordinate the turn (drive y axis accel to zero)
 		g.channel_rudder.servo_out = g.kff_rudder_mix * g.channel_roll.servo_out;	// + g.pidTeThrottle.get_pid(int(error*100), delta_ms_fast_loop, speed_scaler); // + g.pidServoRudder.get_pid(error, delta_ms_fast_loop, speed_scaler);
 	#else
-		g.channel_rudder.servo_out = g.kff_rudder_mix * g.channel_roll.servo_out;
+		if (current_loc.alt > RUDDER2STEER_ALT_THRESHOLD)
+			g.channel_rudder.servo_out = g.kff_rudder_mix * g.channel_roll.servo_out;
+		else
+			g.channel_rudder.servo_out = constrain(bearing_error, -g.roll_limit.get(), g.roll_limit.get());
 		// XXX probably need something here based on heading
 	#endif
 }
@@ -182,15 +188,23 @@ static void calc_nav_roll()
 	// positive error = right turn
 	// Calculate the required roll of the plane
 	// ----------------------------------------
-	nav_roll = g.pidNavRoll.get_pid(bearing_error, delta_ms_fast_loop, nav_gain_scaler);	//returns desired bank angle in degrees*100
+	//Serial.printf_P  (PSTR("alt=%.2f  baro=%.2f  gps=%.2f  home=%.2f  target=%.2f\n"),(float)current_loc.alt/100, baro_alt/100, (float)g_gps->altitude/100, (float)home.alt/100, (float)target_altitude/100);
+	if (current_loc.alt > RUDDER2STEER_ALT_THRESHOLD)
+	{
+		nav_roll = g.pidNavRoll.get_pid(bearing_error, delta_ms_fast_loop, nav_gain_scaler);	//returns desired bank angle in degrees*100
 
-	// Rate Limit roll cmd rather than slew limit the servo(s)
-	// 500 = 5 deg , if nav loop runs 10Hz ? this would limit to 5 deg/s
-	del_nav_roll = nav_roll - last_nav_roll;
-	if(del_nav_roll >  R_SLEW_RATE) nav_roll = last_nav_roll + R_SLEW_RATE;
-	if(del_nav_roll < -R_SLEW_RATE) nav_roll = last_nav_roll - R_SLEW_RATE;
-	nav_roll = constrain(nav_roll, -g.roll_limit.get(), g.roll_limit.get());
-	last_nav_roll = nav_roll;
+		// Rate Limit roll cmd rather than slew limit the servo(s)
+		// 500 = 5 deg , if nav loop runs 10Hz ? this would limit to 5 deg/s
+		del_nav_roll = nav_roll - last_nav_roll;
+		if(del_nav_roll >  R_SLEW_RATE) nav_roll = last_nav_roll + R_SLEW_RATE;
+		if(del_nav_roll < -R_SLEW_RATE) nav_roll = last_nav_roll - R_SLEW_RATE;
+		nav_roll = constrain(nav_roll, -g.roll_limit.get(), g.roll_limit.get());
+		last_nav_roll = nav_roll;
+	}
+	else
+	{
+		nav_roll = 0;
+	}
 }
 
 /*****************************************

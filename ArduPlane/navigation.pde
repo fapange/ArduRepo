@@ -249,7 +249,8 @@ static long comp_360(long error)
 	static void update_loiter()
 	{
 		float power;
-		if(wp_distance <= g.loiter_radius){
+		if(wp_distance <= g.loiter_radius)
+		{
 			if (loiter_time == 0)
 				loiter_time = millis();			// keep start time for loiter updating till we get within LOITER_RANGE of orbit
 				
@@ -257,16 +258,24 @@ static long comp_360(long error)
 			power = constrain(power, 0.5, 1);
 			last_nav_heading = nav_bearing;
 			nav_bearing += (int)(g.crosstrack_gain * (2.0 + power));
-		}else if(wp_distance < 2*g.loiter_radius){
+			nav_bearing = wrap_360(nav_bearing);
+			nav_bearing += nav_geo_fence();
+			nav_bearing = wrap_360(nav_bearing);
+		}
+		else if(wp_distance < 2*g.loiter_radius)
+		{
 			power = -((float)(wp_distance - 2*g.loiter_radius) / g.loiter_radius);
 			power = constrain(power, 0.5, 1);			//power = constrain(power, 0, 1);
 			last_nav_heading = nav_bearing;
 			nav_bearing -= (int)(power * g.crosstrack_gain);
-
-		}else{
+			nav_bearing = wrap_360(nav_bearing);
+			nav_bearing += nav_geo_fence();
+			nav_bearing = wrap_360(nav_bearing);
+		}
+		else
+		{
 			update_crosstrack();
 			//loiter_time = millis();			// keep start time for loiter updating till we get within LOITER_RANGE of orbit
-		
 		}
 	
 		/*if (wp_distance < g.loiter_radius)
@@ -362,8 +371,10 @@ static long nav_crosstrack()
 	return (constrain(100*g.pidTeThrottle.get_pid(crosstrack_error,delta_ms_fast_loop),0,4500));
 }
 
-#define lowD	50.0f
-#define highD	200.0f
+//#define lowD	50.0f
+//#define highD	200.0f
+#define lowD	30.0f
+#define highD	150.0f
 #define refSpeed 3000.0f
 //#define minhLim ((highD-lowD)/2.0f + lowD)
 
@@ -376,6 +387,7 @@ static long nav_geo_fence()
 	float distm;
 	float d_weight;
 	float v_weight;
+	float t_weight;
 	float s_weight;
 	float v_ratio;
 	float hLim;
@@ -388,6 +400,7 @@ static long nav_geo_fence()
 	Vector2f yp;
 	Vector2f geoNav = Vector2f(0, 0);
 	Vector2f nav;
+	Vector2f tgt;
 	Vector2f gnd;
 
     skip_wpt = false;
@@ -402,6 +415,8 @@ static long nav_geo_fence()
 	wp = Vector2f((float)next_WP.lat,(float)next_WP.lng)/1e7f;
 	// Nav Heading vector
 	nav  = Vector2f((float)(cos(ToRad((float)nav_bearing/100.0f))), (float)(sin(ToRad((float)nav_bearing/100.0f))));
+	// Nav Heading vector
+	tgt  = Vector2f((float)(cos(ToRad((float)target_bearing/100.0f))), (float)(sin(ToRad((float)target_bearing/100.0f))));
 	// Ground track vector
 	gnd  = Vector2f((float)(cos(ToRad((float)g_gps->ground_course/100.0f))), (float)(sin(ToRad((float)g_gps->ground_course/100.0f))));
 
@@ -412,17 +427,19 @@ static long nav_geo_fence()
 	//Serial.printf_P (PSTR("v_r=%.2f "),v_ratio);
 
 	// Cycle through fence segments and find their contribution towards geoContainment
+	Serial.printf_P (PSTR("[ "));
 	for (i=1,j=i+1; i<geofence_state->num_points-1; j++, i++) 
 	{
+		// the two endpoints of the segment
 		v = Vector2f((float)geofence_state->boundary[i].x,(float)geofence_state->boundary[i].y)/1e7f;
 		w = Vector2f((float)geofence_state->boundary[j].x,(float)geofence_state->boundary[j].y)/1e7f;
 		// defines point in segment closest to airplane
 		geoPoint = find_closest_point(v, w, p);
 		distm = get_distance(&p,&geoPoint);
-		// consider the segment only if point lies inside the segment
+		// consider the segment only if point lies within the segment
 		if (distm > 0)
 		{
-			// point lies inside segment
+			// point lies within segment
 			segn = i;
 			if (geofence_state->state == OUTSIDE)	yp = (geoPoint-p).normalized();	// Normal vector from airplane to fence 
 			else									yp = (p-geoPoint).normalized();	// Normal vector from fence to airplane
@@ -432,8 +449,8 @@ static long nav_geo_fence()
 			//    0     if moving parallel to fence segment,
 			// -v_ratio if moving away from fence segment
 			v_weight = -dot(gnd, yp);
-			// limit gain to [0.1 v_ratio]
-			if (v_weight < 0.15f) v_weight = 0.15f;
+			v_weight = (v_weight+0.5f)/1.5f;
+			if (v_weight < 0.0f) v_weight = 0.0f;
 
 			// adjustment to distance thresholds based on the velocity gain
 			// the faster the approach of the airplane, and the more perpendicular
@@ -449,40 +466,44 @@ static long nav_geo_fence()
 			else if (distm > hLim)	d_weight = 0.0f;
 			else					d_weight = (hLim-distm)/(hLim-lLim);
 			
-			s_weight = d_weight * v_weight;
-//			if (s_weight > 1.0f) s_weight = 1.0f;
-//			else if (s_weight < -1.0f) s_weight = -1.0f;
+			//t_weight = 1.0f+0.25f*pow(dot(tgt, yp),2);
+			t_weight = 1.0f + pow(dot(tgt, yp),2);
 
+			//s_weight = d_weight * (v_weight + t_weight)/2.0f;
+			s_weight = d_weight * (v_weight + t_weight)/3.0f;
 			//s_weight = (d_weight + v_weight);
 			//s_weight = pow(Vector2f(d_weight,d_weight*v_weight).length_squared(),2);
 
 			//if (segn == 1)
 			{
 				//Serial.printf_P (PSTR("%03.0f "),distm);
-				Serial.printf_P (PSTR("%d"),segn);
-				Serial.printf_P (PSTR("[%.1f "),d_weight);
-				Serial.printf_P (PSTR("%.1f "),v_weight);
-				Serial.printf_P (PSTR("%.1f] "),s_weight);
+				//Serial.printf_P (PSTR("%d"),segn);
+				//Serial.printf_P (PSTR("%.2f "),d_weight);
+				//Serial.printf_P (PSTR("%.2f "),v_ratio);
+				//Serial.printf_P (PSTR("%.2f "),v_weight);
+				//Serial.printf_P (PSTR("%.2f "),t_weight);
+				Serial.printf_P (PSTR("%.2f "),s_weight);
 			}
 
 			geoNav = (yp * s_weight + geoNav);
 		}
 	}
+	Serial.printf_P (PSTR("] "));
 
 	geoWeight = geoNav.length();
 	if (geoWeight > 1.0f)
 	{
-		Serial.printf_P (PSTR(">"));
+		//Serial.printf_P (PSTR(">"));
 		geoWeight = 1.0f;
 	}
 	else if (geoWeight == 0.0f) 
 	{
-		Serial.printf_P (PSTR("0"));
+		//Serial.printf_P (PSTR("0"));
 		geoNav = nav;
 	}
 	else
 	{
-		Serial.printf_P (PSTR("*"));
+		//Serial.printf_P (PSTR("*"));
 		geoNav.normalize();
 		geoNav = geoNav * geoWeight + nav * (1.0f - geoWeight);
 	}
