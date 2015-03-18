@@ -29,7 +29,7 @@ static void failsafe_short_on_event(int fstype)
 		default:
 			break;
 	}
-    gcs_send_text_fmt(PSTR("flight mode = %u"), (unsigned)control_mode);
+    gcs_send_text_fmt(PSTR("switching to flight mode %u"), (unsigned)control_mode);
 }
 
 static void failsafe_long_on_event(int fstype)
@@ -60,7 +60,7 @@ static void failsafe_long_on_event(int fstype)
 		default:
 			break;
 	}
-    gcs_send_text_fmt(PSTR("flight mode = %u"), (unsigned)control_mode);
+    gcs_send_text_fmt(PSTR("switching to flight mode %u"), (unsigned)control_mode);
 }
 
 static void failsafe_short_off_event()

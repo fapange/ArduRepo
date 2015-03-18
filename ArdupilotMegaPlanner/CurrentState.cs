@@ -87,7 +87,7 @@ namespace ArdupilotMega
         public float gpshdop { get; set; }
         public float satcount { get; set; }
 
-        //public float altd1000 { get { return (alt / 1000) % 10; } }
+        public float altd10 { get { return (alt / 10) % 10; } }
         public float altd100 { get { return (alt / 100) % 10; } }
         public float baro_altd100 { get { return (baro_alt / 100) % 10; } }
         public float gps_altd100 { get { return (gps_alt / 100) % 10; } }

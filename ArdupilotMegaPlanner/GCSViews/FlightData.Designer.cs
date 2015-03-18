@@ -2064,6 +2064,7 @@ namespace ArdupilotMega.GCSViews
         ""};
             this.Galt.CapText = "Alt";
             this.Galt.Center = new System.Drawing.Point(75, 75);
+            this.Galt.DataBindings.Add(new System.Windows.Forms.Binding("Value4", this.bindingSource1, "altd10", true));
             this.Galt.DataBindings.Add(new System.Windows.Forms.Binding("Value3", this.bindingSource1, "altd100", true));
             this.Galt.DataBindings.Add(new System.Windows.Forms.Binding("Value2", this.bindingSource1, "baro_altd100", true));
             this.Galt.DataBindings.Add(new System.Windows.Forms.Binding("Value1", this.bindingSource1, "gps_altd100", true));
@@ -2081,7 +2082,7 @@ namespace ArdupilotMega.GCSViews
         AGaugeApp.AGauge.NeedleColorEnum.Gray,
         AGaugeApp.AGauge.NeedleColorEnum.Blue,
         AGaugeApp.AGauge.NeedleColorEnum.Green,
-        AGaugeApp.AGauge.NeedleColorEnum.Gray};
+        AGaugeApp.AGauge.NeedleColorEnum.Green};
             this.Galt.NeedlesColor2 = new System.Drawing.Color[] {
         System.Drawing.Color.Green,
         System.Drawing.Color.White,
@@ -2093,12 +2094,12 @@ namespace ArdupilotMega.GCSViews
         true,
         true,
         true,
-        false};
+        true};
             this.Galt.NeedlesRadius = new int[] {
         56,
         50,
         50,
-        50,
+        40,
         50};
             this.Galt.NeedlesType = new int[] {
         2,
