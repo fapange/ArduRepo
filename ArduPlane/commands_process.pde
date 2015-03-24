@@ -75,6 +75,7 @@ static void process_next_command()
 				if (temp.lat > 0 || temp.lat == -1)
 				{
 					nav_command_index = temp.p1;
+					//gcs_send_text_fmt(PSTR("Jump to Waypoint #%i"),nav_command_index);
 					temp = get_cmd_with_index(nav_command_index);
 					temp.p1 = 0;	// to prevent time to be added twice
 									// the jump command calls set_next_WP()
@@ -98,11 +99,13 @@ static void process_next_command()
 				if (temp2.lat > 0 || temp2.lat == -1)
 				{
 					nav_command_index2 = temp2.p1;
+					//gcs_send_text_fmt(PSTR("Then Waypoint #%i"),nav_command_index2);
 					temp2 = get_cmd_with_index(nav_command_index2);
 				}
 			}
 		}
 		//gcs_send_text_fmt(PSTR("Nav command PREFETCH index #%i"),nav_command_index2);
+		//gcs_send_text_fmt(PSTR("Go to Waypoint %i, then, %i"),nav_command_index,nav_command_index2);
 
 		if(nav_command_index > g.command_total)
 		{

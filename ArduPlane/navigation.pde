@@ -427,7 +427,7 @@ static long nav_geo_fence()
 	//Serial.printf_P (PSTR("v_r=%.2f "),v_ratio);
 
 	// Cycle through fence segments and find their contribution towards geoContainment
-	Serial.printf_P (PSTR("[ "));
+	//Serial.printf_P (PSTR("[ "));
 	for (i=1,j=i+1; i<geofence_state->num_points-1; j++, i++) 
 	{
 		// the two endpoints of the segment
@@ -482,13 +482,13 @@ static long nav_geo_fence()
 				//Serial.printf_P (PSTR("%.2f "),v_ratio);
 				//Serial.printf_P (PSTR("%.2f "),v_weight);
 				//Serial.printf_P (PSTR("%.2f "),t_weight);
-				Serial.printf_P (PSTR("%.2f "),s_weight);
+				//Serial.printf_P (PSTR("%.2f "),s_weight);
 			}
 
 			geoNav = (yp * s_weight + geoNav);
 		}
 	}
-	Serial.printf_P (PSTR("] "));
+	//Serial.printf_P (PSTR("] "));
 
 	geoWeight = geoNav.length();
 	if (geoWeight > 1.0f)
@@ -507,8 +507,8 @@ static long nav_geo_fence()
 		geoNav.normalize();
 		geoNav = geoNav * geoWeight + nav * (1.0f - geoWeight);
 	}
-	Serial.printf_P (PSTR(" %.2f"),geoWeight);
-	Serial.printf_P (PSTR("\n"));
+	//Serial.printf_P (PSTR(" %.2f"),geoWeight);
+	//Serial.printf_P (PSTR("\n"));
 
 	navHeading = (long)get_bearing(&p, &(p+nav));
 	geoHeading = (long)get_bearing(&p, &(p+geoNav));

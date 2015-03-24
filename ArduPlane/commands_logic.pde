@@ -653,10 +653,10 @@ static void do_loiter_at_location()
 static void do_jump()
 {
 	struct Location temp;
-	//gcs_send_text_fmt(PSTR("In jump.  Jumps left: %i"),next_nonnav_command.lat);
-	//gcs_send_text_fmt(PSTR("Jumps left: %i"),next_nonnav_command.lat);
-	if(next_nonnav_command.lat > 0) {
-
+	//gcs_send_text_fmt(PSTR("Jumps to Waypoint %i left: %i"),next_nonnav_command.p1,next_nonnav_command.lat);
+	
+	if(next_nonnav_command.lat > 0) 
+	{
 		nav_command_ID		= NO_COMMAND;
 		next_nav_command.id = NO_COMMAND;
 		non_nav_command_ID 	= NO_COMMAND;
@@ -669,15 +669,21 @@ static void do_jump()
 		g.command_index.set_and_save(next_nonnav_command.p1 - 1);
 		nav_command_index 	= next_nonnav_command.p1 - 1;
 		next_WP = prev_WP;		// Need to back "next_WP" up as it was set to the next waypoint following the jump
-		process_next_command();
-	} else if (next_nonnav_command.lat == -1) {								// A repeat count of -1 = repeat forever
+		
+		// commented on 3/23/15 to fix problem with jump commands not working correctly
+		//process_next_command();
+	} 
+	else if (next_nonnav_command.lat == -1) 
+	{								// A repeat count of -1 = repeat forever
 		nav_command_ID 	= NO_COMMAND;
 		non_nav_command_ID 	= NO_COMMAND;
 		//gcs_send_text_fmt(PSTR("setting command index: %i"),next_nonnav_command.p1 - 1);
 	    g.command_index.set_and_save(next_nonnav_command.p1 - 1);
 		nav_command_index 	= next_nonnav_command.p1 - 1;
 		next_WP = prev_WP;		// Need to back "next_WP" up as it was set to the next waypoint following the jump
-		process_next_command();
+		
+		// commented on 3/23/15 to fix problem with jump commands not working correctly
+		//process_next_command();
 	}
 }
 

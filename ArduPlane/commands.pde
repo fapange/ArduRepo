@@ -26,14 +26,19 @@ static void init_commands()
 static void update_auto()
 {
 	//time_left = 0;
-	if (g.command_index >= g.command_total) {
+	if (g.command_index >= g.command_total) 
+	{
 		handle_no_commands();
-		if(g.command_total == 0) {
+		if(g.command_total == 0) 
+		{
 			next_WP.lat 		= home.lat + 1000;	// so we don't have bad calcs
 			next_WP.lng 		= home.lng + 1000;	// so we don't have bad calcs
 		}
-	} else {
-    	if(g.command_index != 0) {
+	} 
+	else 
+	{
+    	if(g.command_index != 0) 
+		{
     		g.command_index = nav_command_index;
     		nav_command_index--;
     	}
@@ -203,6 +208,8 @@ static void modify_next_WP(struct Location *wp, int delta)
 
 		time_left2 = time_left + next_WP2.p1;
 	}
+	else
+		gcs_send_text_fmt(PSTR("Going to Waypoint %i"),nav_command_index);
 
 	// used to control FBW and limit the rate of climb
 	// -----------------------------------------------
