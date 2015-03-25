@@ -311,7 +311,11 @@ static void dowindcalc()
 
     wind_dir = (float)wrap_360((long)ToDeg(atan2(We_fgo, Wn_fgo))*100);
     wind_vel = (float)sqrt(We_fgo*We_fgo + Wn_fgo*Wn_fgo);
+
+	if (wind_vel < 25.0f) wind_dir = 0.0f;
 }
+
+#define headSLEW  300
 
 static void update_crosstrack(void)
 {
@@ -353,6 +357,8 @@ static void update_crosstrack(void)
 	nav_bearing = wrap_360(nav_bearing);
 	nav_bearing += nav_geo_fence();
 	nav_bearing = wrap_360(nav_bearing);
+	nav_bearing = last_nav_heading + constrain(wrap_180(nav_bearing - last_nav_heading), -headSLEW, headSLEW);
+	nav_bearing = wrap_360(nav_bearing);
 }
 
 static void reset_crosstrack()
@@ -378,6 +384,11 @@ static long nav_crosstrack()
 #define refSpeed 3000.0f
 //#define minhLim ((highD-lowD)/2.0f + lowD)
 
+//---------------------------------------------------------------------
+// This function calculates the effect of a geoContainment area  to the 
+// navHeading of the airplane by superposition of the individual
+// effects of all boundary segments
+//---------------------------------------------------------------------
 static long nav_geo_fence()
 {
     uint8_t i,j;

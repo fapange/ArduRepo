@@ -480,8 +480,15 @@ static bool location_past_point(void)
 {
 	Vector2f loc1(current_loc.lat,current_loc.lng);
 	Vector2f pt1(prev_WP.lat,prev_WP.lng);
-	Vector2f pt2(next_WP.lat,next_WP.lng);
-
+	
+	// This definition puts an orthogonal line at the next waypoint
+	//Vector2f pt2(next_WP.lat,next_WP.lng);
+	
+	// This definition puts an orthogonal line WptRadius distance 
+	// in front of the next waypoint
+	Vector2f pt3(next_WP.lat,next_WP.lng);
+	Vector2f pt2 = pt1 + (pt3-pt1) * (((pt3-pt1).length()-WptRadius)/(pt3-pt1).length());
+	
 	float angle = (float)acos(((loc1-pt2)*(pt1-pt2))/((loc1-pt2).length()*(pt1-pt2).length()));
 
 	if (isinf(angle))

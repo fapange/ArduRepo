@@ -1421,44 +1421,5 @@ namespace ArdupilotMega
             return this.MemberwiseClone();
         }
 
-        /*
-        public void dowindcalc()
-        {
-            //Wind Fixed gain Observer
-            //Ryan Beall 
-            //8FEB10
-
-            double Kw = 0.010; // 0.01 // 0.10
-
-            if (airspeed < 1 || groundspeed < 1)
-                return;
-
-#if SLV_ADDED
-            double Wn_error = airspeed * Math.Cos((yaw) * deg2rad) * Math.Cos((pitch) * deg2rad) - groundspeed * Math.Cos((groundcourse) * deg2rad) - Wn_fgo;
-            double We_error = airspeed * Math.Sin((yaw) * deg2rad) * Math.Cos((pitch) * deg2rad) - groundspeed * Math.Sin((groundcourse) * deg2rad) - We_fgo;
-            //double Wn_error = airspeed * Math.Cos((yaw) * deg2rad) * Math.Cos((pitch - float.Parse(MainV2.comPort.param["TRIM_PITCH_CD"].ToString())) * deg2rad) - groundspeed * Math.Cos((groundcourse) * deg2rad) - Wn_fgo;
-            //double We_error = airspeed * Math.Sin((yaw) * deg2rad) * Math.Cos((pitch - float.Parse(MainV2.comPort.param["TRIM_PITCH_CD"].ToString())) * deg2rad) - groundspeed * Math.Sin((groundcourse) * deg2rad) - We_fgo;
-#else
-            double Wn_error = airspeed * Math.Cos((yaw) * deg2rad) * Math.Cos((pitch) * deg2rad) - groundspeed * Math.Cos((groundcourse) * deg2rad) - Wn_fgo;
-            double We_error = airspeed * Math.Sin((yaw) * deg2rad) * Math.Cos((pitch) * deg2rad) - groundspeed * Math.Sin((groundcourse) * deg2rad) - We_fgo;
-#endif
-            Wn_fgo = Wn_fgo + Kw * Wn_error;
-            We_fgo = We_fgo + Kw * We_error;
-
-            double wind_dir = (Math.Atan2(We_fgo, Wn_fgo) * (180 / Math.PI));
-            double wind_vel = (Math.Sqrt(Math.Pow(We_fgo, 2) + Math.Pow(Wn_fgo, 2)));
-
-            wind_dir = (wind_dir + 360) % 360;
-
-            this.wind_dir = (float)wind_dir;// (float)(wind_dir * 0.5 + this.wind_dir * 0.5);
-            this.wind_vel = (float)wind_vel;// (float)(wind_vel * 0.5 + this.wind_vel * 0.5);
-
-            //Console.WriteLine("Wn_error = {0}\nWe_error = {1}\nWn_fgo =    {2}\nWe_fgo =  {3}\nWind_dir =    {4}\nWind_vel =    {5}\n",Wn_error,We_error,Wn_fgo,We_fgo,wind_dir,wind_vel);
-
-            //Console.WriteLine("wind_dir: {0} wind_vel: {1}    as {4} yaw {5} pitch {6} gs {7} cog {8}", wind_dir, wind_vel, Wn_fgo, We_fgo , airspeed,yaw,pitch,groundspeed,groundcourse);
-
-            //low pass the outputs for better results!
-        }
-        */
     }
 }
