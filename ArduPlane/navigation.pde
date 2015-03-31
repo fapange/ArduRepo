@@ -312,10 +312,11 @@ static void dowindcalc()
     wind_dir = (float)wrap_360((long)ToDeg(atan2(We_fgo, Wn_fgo))*100);
     wind_vel = (float)sqrt(We_fgo*We_fgo + Wn_fgo*Wn_fgo);
 
+	// if wind_vel is less than 0.25 m/s set the wind_dir to zero
 	if (wind_vel < 25.0f) wind_dir = 0.0f;
 }
 
-#define headSLEW  300
+#define headSLEW  18000
 
 static void update_crosstrack(void)
 {
