@@ -7,7 +7,6 @@
     <ClInclude Include="GCS.h" />
     <ClInclude Include="mydefines.h" />
     <ClInclude Include="Parameters.h" />
-    <ClInclude Include="Visual Micro\.ArduPlane.vsarduino.h" />
     <ClInclude Include="Hil_Plane.h" />
     <ClInclude Include="N381NA.h" />
     <ClInclude Include="N382NA.h" />
@@ -19,6 +18,7 @@
     <ClInclude Include="N803RE.h" />
     <ClInclude Include="N386NA.h" />
     <ClInclude Include="N387NA.h" />
+    <ClInclude Include="Visual Micro\.ArduPlane.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ArduPlane.pde" />

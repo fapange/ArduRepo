@@ -150,7 +150,7 @@ goto :eof
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <PreBuildEvent>
-      <Command>"C:\Program Files (x86)\Git\bin\git.exe" rev-parse HEAD &gt; githash.h</Command>
+      <Command>cd "C:\Users\svazquez\Documents\GitHub\ArduRepo\ArduPlane"  "C:\Program Files (x86)\Git\bin\git.exe" rev-parse HEAD &gt; "C:\Users\svazquez\Documents\GitHub\ArduRepo\ArduPlane\githash.h"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='AVR|Win32'">
