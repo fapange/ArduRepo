@@ -150,7 +150,7 @@ goto :eof
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
     <PreBuildEvent>
-      <Command>cd "C:\Users\svazquez\Documents\GitHub\ArduRepo\ArduPlane"  "C:\Program Files (x86)\Git\bin\git.exe" rev-parse HEAD &gt; "C:\Users\svazquez\Documents\GitHub\ArduRepo\ArduPlane\githash.h"</Command>
+      <Command>cmd /c  git_hash.bat</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='AVR|Win32'">
@@ -178,6 +178,9 @@ goto :eof
     <ClInclude Include="config.h" />
     <ClInclude Include="defines.h" />
     <ClInclude Include="GCS.h" />
+    <ClInclude Include="git_hash.h">
+      <FileType>CppCode</FileType>
+    </ClInclude>
     <ClInclude Include="Hil_Plane.h">
       <FileType>CppCode</FileType>
     </ClInclude>
@@ -280,7 +283,7 @@ goto :eof
   </ImportGroup>
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties arduino.board.core.full_path="F:\ArduPlane\arduino-0022-relaxpatch\hardware\arduino\cores\arduino" arduino.project="1" arduino.board.name="mega2560" arduino.board.desc="Arduino Mega 2560" arduino.board.property_bag="name=Arduino Mega 2560&#xD;&#xA;upload.protocol=stk500v2&#xD;&#xA;upload.maximum_size=258048&#xD;&#xA;upload.speed=115200&#xD;&#xA;bootloader.low_fuses=0xFF&#xD;&#xA;bootloader.high_fuses=0xD8&#xD;&#xA;bootloader.extended_fuses=0xFD&#xD;&#xA;bootloader.path=stk500v2&#xD;&#xA;bootloader.file=stk500boot_v2_mega2560.hex&#xD;&#xA;bootloader.unlock_bits=0x3F&#xD;&#xA;bootloader.lock_bits=0x0F&#xD;&#xA;build.mcu=atmega2560&#xD;&#xA;build.f_cpu=16000000L&#xD;&#xA;build.core=arduino&#xD;&#xA;runtime.ide.path=C:\Program Files (x86)\Arduino&#xD;&#xA;build.system.path=C:\Program Files (x86)\Arduino\hardware\arduino\system&#xD;&#xA;software=ARDUINO&#xD;&#xA;runtime.ide.version=101&#xD;&#xA;vm.core.include=wprogram.h&#xD;&#xA;vm.boardsource.path=C:\Program Files (x86)\Arduino\hardware\arduino&#xD;&#xA;vm.boardsource.name=boards.txt&#xD;&#xA;vm.platformname.name=&#xD;&#xA;" arduino.build.mcu="atmega2560" arduino.build.f_cpu="16000000L" arduino.build.core="arduino" arduino.upload.protocol="stk500v2" arduino.upload.speed="115200" arduino.upload.maximum_size="258048" arduino.compiler.include.paths=" -IF:\ArduPlane\arduino-0022-relaxpatch\libraries\SPI " arduino.upload.port="COM50" />
+      <UserProperties arduino.board.core.full_path="F:\ArduPlane\arduino-0022-relaxpatch\hardware\arduino\cores\arduino" arduino.project="1" arduino.board.name="mega2560" arduino.board.desc="Arduino Mega 2560" arduino.board.property_bag="name=Arduino Mega 2560&#xD;&#xA;upload.protocol=stk500v2&#xD;&#xA;upload.maximum_size=258048&#xD;&#xA;upload.speed=115200&#xD;&#xA;bootloader.low_fuses=0xFF&#xD;&#xA;bootloader.high_fuses=0xD8&#xD;&#xA;bootloader.extended_fuses=0xFD&#xD;&#xA;bootloader.path=stk500v2&#xD;&#xA;bootloader.file=stk500boot_v2_mega2560.hex&#xD;&#xA;bootloader.unlock_bits=0x3F&#xD;&#xA;bootloader.lock_bits=0x0F&#xD;&#xA;build.mcu=atmega2560&#xD;&#xA;build.f_cpu=16000000L&#xD;&#xA;build.core=arduino&#xD;&#xA;runtime.ide.path=C:\Program Files (x86)\Arduino&#xD;&#xA;build.system.path=C:\Program Files (x86)\Arduino\hardware\arduino\system&#xD;&#xA;software=ARDUINO&#xD;&#xA;runtime.ide.version=101&#xD;&#xA;vm.core.include=wprogram.h&#xD;&#xA;vm.boardsource.path=C:\Program Files (x86)\Arduino\hardware\arduino&#xD;&#xA;vm.boardsource.name=boards.txt&#xD;&#xA;vm.platformname.name=&#xD;&#xA;" arduino.build.mcu="atmega2560" arduino.build.f_cpu="16000000L" arduino.build.core="arduino" arduino.upload.protocol="stk500v2" arduino.upload.speed="115200" arduino.upload.maximum_size="258048" arduino.compiler.include.paths=" -IF:\ArduPlane\arduino-0022-relaxpatch\libraries\SPI " arduino.upload.port="COM32" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>

@@ -28,7 +28,7 @@
 #ifdef MAV_SYSTEM_ID
 	#undef MAV_SYSTEM_ID
 #endif
-#define MAV_SYSTEM_ID	(SLV_HILPLANE)
+#define MAV_SYSTEM_ID	(SLV_N803RE)
 #define MAV_GCS_ID		(255-MAV_SYSTEM_ID)
 #define MAV_JS_ID		(137)
 #define MAV_BEAGLE_ID	(103)

@@ -19,6 +19,7 @@
     <ClInclude Include="N386NA.h" />
     <ClInclude Include="N387NA.h" />
     <ClInclude Include="Visual Micro\.ArduPlane.vsarduino.h" />
+    <ClInclude Include="git_hash.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ArduPlane.pde" />

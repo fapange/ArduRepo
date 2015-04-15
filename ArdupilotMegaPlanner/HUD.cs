@@ -1385,8 +1385,8 @@ namespace hud
                 //drawstring(graphicsObject, "V" + hudVehicle + " L" + hudLoiter + " M" + hudMode + " W" + numWpts, font, fontsize, whiteBrush, 1, scrollbg.Bottom + 5 + 4 * (fontsize + 7));
                 drawstring(graphicsObject, ArdupilotMega.MainV2.GIT_ID, font, fontsize, whiteBrush, 1, scrollbg.Bottom + 5 + 4 * (fontsize + 7));
                 //drawstring(graphicsObject, "MUX: " + (hudMUX > 300 ? "AP" : "RC"), font, fontsize, whiteBrush, 1, scrollbg.Bottom + 5 + 5 * (fontsize + 7));
-                drawstring(graphicsObject, "RC: " + (hudRC_state == 0 ? "OFF" : hudRC_state == 1 ? "ON" : hudRC_state == 255 ? "FAILSAFE" : hudRC_state == 128 ? "ENGINE_OFF" : "UNKNOWN"), font, fontsize, whiteBrush, 1, scrollbg.Bottom + 5 + 5 * (fontsize + 7));
-                drawstring(graphicsObject, "Odometer: " + hudOdometer, font, fontsize, whiteBrush, 1, scrollbg.Bottom + 5 + 6 * (fontsize + 7));
+                drawstring(graphicsObject, "RC: " + (hudRCNo Fix_state == 0 ? "OFF" : hudRC_state == 1 ? "ON" : hudRC_state == 255 ? "FAILSAFE" : hudRC_state == 128 ? "ENGINE_OFF" : "UNKNOWN"), font, fontsize, whiteBrush, 1, scrollbg.Bottom + 5 + 6 * (fontsize + 7));
+                drawstring(graphicsObject, "Odometer: " + hudOdometer, font, fontsize, whiteBrush, 1, scrollbg.Bottom + 5 + 5 * (fontsize + 7));
                 // mode and wp dist, wp, time, gps
                 string gps = "";
                 if (_gpsfix == 0) gps = ("GPS: No GPS");

@@ -305,6 +305,7 @@ static void test_wp_print(struct Location *cmd, byte wp_index);
 #include "C:\Users\svazquez\Documents\GitHub\ArduRepo\ArduPlane\events.pde"
 #include "C:\Users\svazquez\Documents\GitHub\ArduRepo\ArduPlane\failsafe.pde"
 #include "C:\Users\svazquez\Documents\GitHub\ArduRepo\ArduPlane\geofence.pde"
+#include "C:\Users\svazquez\Documents\GitHub\ArduRepo\ArduPlane\git_hash.h"
 #include "C:\Users\svazquez\Documents\GitHub\ArduRepo\ArduPlane\mydefines.h"
 #include "C:\Users\svazquez\Documents\GitHub\ArduRepo\ArduPlane\navigation.pde"
 #include "C:\Users\svazquez\Documents\GitHub\ArduRepo\ArduPlane\planner.pde"
