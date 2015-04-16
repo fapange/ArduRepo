@@ -704,10 +704,10 @@
 
 
 #ifndef LOG_ATTITUDE_FAST
-# define LOG_ATTITUDE_FAST		DISABLED
+# define LOG_ATTITUDE_FAST		ENABLED
 #endif
 #ifndef LOG_ATTITUDE_MED
-# define LOG_ATTITUDE_MED 		ENABLED
+# define LOG_ATTITUDE_MED 		DISABLED
 #endif
 #ifndef LOG_GPS
 # define LOG_GPS 				ENABLED
@@ -716,22 +716,22 @@
 # define LOG_PM 				ENABLED
 #endif
 #ifndef LOG_CTUN
-# define LOG_CTUN				DISABLED
+# define LOG_CTUN				ENABLED
 #endif
 #ifndef LOG_NTUN
-# define LOG_NTUN				DISABLED
+# define LOG_NTUN				ENABLED
 #endif
 #ifndef LOG_MODE
 # define LOG_MODE				ENABLED
 #endif
 #ifndef LOG_RAW
-# define LOG_RAW				DISABLED
+# define LOG_RAW				ENABLED
 #endif
 #ifndef LOG_CMD
 # define LOG_CMD				ENABLED
 #endif
 #ifndef LOG_CUR
-# define LOG_CUR			DISABLED
+# define LOG_CUR			ENABLED
 #endif
 
 // calculate the default log_bitmask
