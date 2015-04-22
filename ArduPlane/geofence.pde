@@ -110,12 +110,14 @@ static void geofence_load(void)
         if (memcheck_available_memory() < 512 + sizeof(struct geofence_state)) 
 		{
             // too risky to enable as we could run out of stack
+			gcs_send_text_P(SEVERITY_HIGH,PSTR("ERROR: Not enough memory for geo-fence"));
             goto failed;
         }
         geofence_state = (struct geofence_state *)calloc(1, sizeof(struct geofence_state));
         if (geofence_state == NULL) 
 		{
             // not much we can do here except disable it
+			gcs_send_text_P(SEVERITY_HIGH,PSTR("ERROR: Could not allocate memory for geo-fence"));
             goto failed;
         }
     }
@@ -125,6 +127,7 @@ static void geofence_load(void)
 
 	if (g.fence_total > MAX_FENCEPOINTS)
 	{
+		gcs_send_text_P(SEVERITY_HIGH,PSTR("ERROR: Too many geo-fence points"));
 		goto failed;
 	}
 
@@ -137,11 +140,13 @@ static void geofence_load(void)
     if (!Polygon_complete(&geofence_state->boundary[1], geofence_state->num_points-1)) 
 	{
         // first point and last point must be the same
+		gcs_send_text_P(SEVERITY_HIGH,PSTR("ERROR: incomplete geo-fence polygon"));
         goto failed;
     }
     if (Polygon_outside(geofence_state->boundary[0], &geofence_state->boundary[1], geofence_state->num_points-1)) 
 	{
         // return point needs to be inside the fence
+		gcs_send_text_P(SEVERITY_HIGH,PSTR("ERROR: return point for geo-fence is outside the fence"));
         goto failed;
     }
 
@@ -154,7 +159,6 @@ static void geofence_load(void)
 
 failed:
     g.fence_action.set(FENCE_ACTION_NONE);
-    gcs_send_text_P(SEVERITY_HIGH,PSTR("geo-fence setup error"));
 	return;
 }
 
@@ -270,6 +274,11 @@ static bool geofence_check_boundaries(void)
 static void geofence_state_machine(void)
 {
 	bool breach = geofence_check_boundaries();
+	if (geofence_state == NULL)
+	{
+		gcs_send_text_P(SEVERITY_HIGH,PSTR("ERROR: geofence_state is NULL"));
+		return;
+	}
 	switch (geofence_state->state)
 	{
 		case INSIDE:
