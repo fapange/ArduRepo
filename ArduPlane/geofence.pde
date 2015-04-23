@@ -34,7 +34,8 @@ static struct geofence_state {
 	fence_state pre_state;
     /* point 0 is the return point */
     Vector2l boundary[MAX_FENCEPOINTS];
-} *geofence_state;
+} geofence_struct;
+static struct geofence_state *geofence_state = NULL;
 
 
 /*
@@ -107,7 +108,8 @@ static void geofence_load(void)
 
     if (geofence_state == NULL) 
 	{
-        if (memcheck_available_memory() < 512 + sizeof(struct geofence_state)) 
+        /*
+		if (memcheck_available_memory() < 512 + sizeof(struct geofence_state)) 
 		{
             // too risky to enable as we could run out of stack
 			gcs_send_text_P(SEVERITY_HIGH,PSTR("ERROR: Not enough memory for geo-fence"));
@@ -120,6 +122,8 @@ static void geofence_load(void)
 			gcs_send_text_P(SEVERITY_HIGH,PSTR("ERROR: Could not allocate memory for geo-fence"));
             goto failed;
         }
+		*/
+		geofence_state = &geofence_struct;
     }
 
 	geofence_state->state = INSIDE;

@@ -151,7 +151,10 @@ static void calc_nav_yaw(float speed_scaler)
 		//Serial.printf_P (PSTR("y=%.2f  z=%.2f  roll=%.2f   yc=%.2f  zc=%.2f  Side Accel %.2f\n"),temp.y,temp.z,float(dcm.roll_sensor)/100.0,yc,zc,error);
 
 		// Control is a feedforward from the aileron control + a PID to coordinate the turn (drive y axis accel to zero)
-		g.channel_rudder.servo_out = g.kff_rudder_mix * g.channel_roll.servo_out;	// + g.pidTeThrottle.get_pid(int(error*100), delta_ms_fast_loop, speed_scaler); // + g.pidServoRudder.get_pid(error, delta_ms_fast_loop, speed_scaler);
+		if (current_loc.alt > RUDDER2STEER_ALT_THRESHOLD)
+			g.channel_rudder.servo_out = g.kff_rudder_mix * g.channel_roll.servo_out;	// + g.pidTeThrottle.get_pid(int(error*100), delta_ms_fast_loop, speed_scaler); // + g.pidServoRudder.get_pid(error, delta_ms_fast_loop, speed_scaler);
+		else
+			g.channel_rudder.servo_out = constrain(bearing_error, -g.roll_limit.get(), g.roll_limit.get());
 	#else
 		if (current_loc.alt > RUDDER2STEER_ALT_THRESHOLD)
 			g.channel_rudder.servo_out = g.kff_rudder_mix * g.channel_roll.servo_out;
