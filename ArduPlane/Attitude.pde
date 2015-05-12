@@ -111,11 +111,13 @@ static void crash_checker()
 static void calc_throttle()
 {
 	const float inc = 10.0f;
-	float boost;
+	static float boost = 0.0f;
 	float deltaThrottle;
 
 
-	if (altitude_error > 3000)
+	if (airspeed < 100*(STALL_SPEED+STALL_SPEED_BUFFER))
+		boost += 2*T_SLEW_RATE;
+	else if (altitude_error > 3000)
 		boost = inc*((float)altitude_error/(float)(target_altitude-3000));
 	else
 		boost = 0.0f;

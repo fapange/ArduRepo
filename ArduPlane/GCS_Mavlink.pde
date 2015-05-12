@@ -111,6 +111,8 @@ static NOINLINE void send_heartbeat(mavlink_channel_t chan)
 		(uint8_t)MAV_SYSTEM_ID, // Sending the vehicle ID so the ground station can auto-configure
 		(uint8_t)g.command_total.get());
 #endif // MAVLINK10
+	if ((airspeed < 100*(STALL_SPEED+STALL_SPEED_BUFFER)) & (current_loc.alt > RUDDER2STEER_ALT_THRESHOLD))
+		gcs_send_text_fmt(PSTR("Approaching STALL"));
 }
 
 static NOINLINE void send_attitude(mavlink_channel_t chan)
@@ -2273,7 +2275,10 @@ void GCS_MAVLINK::handleMessage(mavlink_message_t* msg)
         {
             // decode
             mavlink_gps_raw_t packet;
-            mavlink_msg_gps_raw_decode(msg, &packet);
+
+            if (waypoint_sending || waypoint_receiving) break;
+
+			mavlink_msg_gps_raw_decode(msg, &packet);
 
             // set gps hil sensor
             g_gps->setHIL(packet.usec/1000.0,packet.lat,packet.lon,packet.alt,
@@ -2341,6 +2346,9 @@ void GCS_MAVLINK::handleMessage(mavlink_message_t* msg)
         {
             // decode
             mavlink_attitude_t packet;
+
+            if (waypoint_sending || waypoint_receiving) break;
+
             mavlink_msg_attitude_decode(msg, &packet);
 
             // set dcm hil sensor
@@ -2402,6 +2410,9 @@ void GCS_MAVLINK::handleMessage(mavlink_message_t* msg)
         {
             // decode
             mavlink_raw_imu_t packet;
+
+            if (waypoint_sending || waypoint_receiving) break;
+
             mavlink_msg_raw_imu_decode(msg, &packet);
 
             // set imu hil sensors

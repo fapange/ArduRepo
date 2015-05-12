@@ -154,7 +154,7 @@
 #define THISFLIGHTMODE	"Simulation Mode"
 #define AIRFRAME_NAME	"Hil Edge"
 
-#define STALL_SPEED				14
+#define STALL_SPEED				18
 #define AIRSPEED_CAL_GAIN		128.0
 #define AIRSPEED_CAL_OFFSET		2.63
 
